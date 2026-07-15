@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FAF9F6;color:#1B1A17;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#B54A2B}a:hover{color:#8F3A22}
+*{box-sizing:border-box}
+button{font-family:inherit}input{font-family:inherit}
+@keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="min-height:100vh;--acc:{{accent}}">
+<header style="position:sticky;top:0;z-index:10;background:rgba(250,249,246,.94);backdrop-filter:blur(8px);border-bottom:1px solid #E7E3DA">
+ <div style="max-width:1080px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <div onClick="{{goHome}}" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+   <div style="width:26px;height:26px;border-radius:7px;background:var(--acc,#B54A2B);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">V</div>
+   <div style="font-weight:700;font-size:16px">Verbos</div>
+   <div style="font-size:11px;color:#8A857B;margin-top:2px">español A1–A2</div>
+  </div>
+  <nav style="display:flex;gap:4px;margin-left:auto;flex-wrap:wrap">
+   <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="4">
+    <button onClick="{{tab.go}}" style="{{tab.style}}">{{tab.label}}</button>
+   </sc-for>
+  </nav>
+ </div>
+</header>
+
+<sc-if value="{{loading}}" hint-placeholder-val="{{true}}">
+ <main style="max-width:1060px;margin:0 auto;padding:60px 16px;color:#8A857B;font-size:15px">Cargando verbos…</main>
+</sc-if>
+
+<sc-if value="{{isHome}}" hint-placeholder-val="{{false}}">
+<main style="max-width:1060px;margin:0 auto;padding:20px 16px 70px;animation:fadein .25s ease">
+ <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin-bottom:14px">
+  <input value="{{q}}" onChange="{{onSearch}}" placeholder="Buscar verbo… (ir, to go)" style="flex:1;min-width:200px;padding:11px 14px;border:1.5px solid #E1DCD2;border-radius:10px;font-size:15px;background:#fff;outline-color:var(--acc,#B54A2B)"></input>
+  <button onClick="{{onRandom}}" style="padding:11px 16px;border-radius:10px;border:1.5px solid #E1DCD2;background:#fff;cursor:pointer;font-size:14px;font-weight:600">Verbo al azar</button>
+  <button onClick="{{goTest}}" style="padding:11px 16px;border-radius:10px;border:none;background:var(--acc,#B54A2B);color:#fff;cursor:pointer;font-size:14px;font-weight:600">Empezar test</button>
+ </div>
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px">
+  <sc-for list="{{stats}}" as="s" hint-placeholder-count="4">
+   <div style="background:#fff;border:1px solid #E7E3DA;border-radius:10px;padding:10px 12px">
+    <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace">{{s.value}}</div>
+    <div style="font-size:11.5px;color:#8A857B">{{s.label}}</div>
+   </div>
+  </sc-for>
+ </div>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+  <sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+   <button onClick="{{f.go}}" style="{{f.style}}">{{f.label}}</button>
+  </sc-for>
+ </div>
+ <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:10px">
+  <sc-for list="{{verbList}}" as="v" hint-placeholder-count="8">
+   <div onClick="{{v.open}}" style="background:#fff;border:1px solid #E7E3DA;border-radius:10px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="border-color:var(--acc,#B54A2B)">
+    <div style="display:flex;align-items:center;gap:8px">
+     <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:17px">{{v.inf}}</span>
+     <span style="{{v.irrStyle}}">irregular</span>
+    </div>
+    <div style="font-size:13px;color:#8A857B">{{v.tr}}</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+     <div style="flex:1;height:4px;border-radius:2px;background:#F0EDE6;overflow:hidden"><div style="{{v.masteryStyle}}"></div></div>
+     <button onClick="{{v.toggleStar}}" title="Importante" style="{{v.starStyle}}">★</button>
+     <button onClick="{{v.toggleBook}}" title="Repasar más tarde" style="{{v.bookStyle}}">⚑</button>
+    </div>
+   </div>
+  </sc-for>
+ </div>
+ <p style="font-size:12.5px;color:#8A857B;margin-top:22px">Los verbos viven en <span style="font-family:'IBM Plex Mono',monospace">data/verbs.json</span> — añade más siguiendo el mismo formato. Tu progreso y marcas se guardan en este dispositivo.</p>
+</main>
+</sc-if>
+
+<sc-if value="{{isVerb}}" hint-placeholder-val="{{false}}">
+<main style="max-width:1060px;margin:0 auto;padding:18px 16px 70px;animation:fadein .25s ease">
+ <div style="display:flex;gap:8px;margin-bottom:14px">
+  <button onClick="{{goHome}}" style="padding:7px 12px;border-radius:8px;border:1px solid #E1DCD2;background:#fff;cursor:pointer;font-size:13px">← Panel</button>
+  <button onClick="{{onRandom}}" style="padding:7px 12px;border-radius:8px;border:1px solid #E1DCD2;background:#fff;cursor:pointer;font-size:13px;margin-left:auto">Otro al azar →</button>
+ </div>
+ <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:18px 20px;margin-bottom:14px">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+   <h1 style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:32px;font-weight:600">{{curInf}}</h1>
+   <span style="font-size:12px;font-weight:600;color:#8A857B;border:1px solid #E1DCD2;border-radius:6px;padding:2px 7px">-{{curType}}</span>
+   <span style="{{curIrrStyle}}">irregular</span>
+   <div style="margin-left:auto;display:flex;gap:6px">
+    <button onClick="{{curToggleStar}}" style="{{curStarStyle}}">★ importante</button>
+    <button onClick="{{curToggleBook}}" style="{{curBookStyle}}">⚑ repasar</button>
+   </div>
+  </div>
+  <div style="font-size:16px;color:#5C574D;margin-top:4px">{{curTr}}</div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:14px">
+   <div><span style="color:#8A857B;font-size:12px">gerundio </span><span style="{{curGerStyle}}">{{curGer}}</span></div>
+   <div><span style="color:#8A857B;font-size:12px">participio </span><span style="{{curPartStyle}}">{{curPart}}</span></div>
+  </div>
+ </div>
+ <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:14px 20px;margin-bottom:8px">
+  <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8A857B;margin-bottom:8px">Ejemplos</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+   <sc-for list="{{curExamples}}" as="e" hint-placeholder-count="3">
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">
+     <span style="font-weight:600;font-size:15px">{{e.es}}</span>
+     <span style="color:#8A857B;font-size:13.5px">{{e.en}}</span>
+     <span style="margin-left:auto;font-size:11px;color:var(--acc,#B54A2B);border:1px solid #EFD9CF;border-radius:5px;padding:1px 6px">{{e.t}}</span>
+    </div>
+   </sc-for>
+  </div>
+ </div>
+ <sc-for list="{{curGroups}}" as="g" hint-placeholder-count="3">
+  <section style="margin-top:22px">
+   <h2 style="font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A857B;margin:0 0 10px">{{g.name}}</h2>
+   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+    <sc-for list="{{g.tenses}}" as="t" hint-placeholder-count="2">
+     <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;overflow:hidden">
+      <div style="padding:10px 14px;border-bottom:1px solid #F0EDE6">
+       <div style="font-weight:600;font-size:15px">{{t.name}}</div>
+       <div style="font-size:12px;color:#8A857B">{{t.hint}}</div>
+      </div>
+      <div style="padding:6px 14px 10px">
+       <sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:4.5px 0;border-bottom:1px dashed #F2EFE8;font-size:14px">
+         <span style="color:#8A857B;font-size:12.5px;white-space:nowrap">{{r.person}}</span>
+         <span style="{{r.style}}">{{r.form}}</span>
+        </div>
+       </sc-for>
+      </div>
+     </div>
+    </sc-for>
+   </div>
+  </section>
+ </sc-for>
+</main>
+</sc-if>
+
+<sc-if value="{{isTest}}" hint-placeholder-val="{{false}}">
+<main style="max-width:640px;margin:0 auto;padding:20px 16px 70px;animation:fadein .25s ease">
+ <div style="display:flex;gap:14px;font-size:13px;color:#8A857B;margin-bottom:12px;flex-wrap:wrap">
+  <span>Sesión: <b style="color:#2F5626">{{sessRight}} ✓</b> · <b style="color:#8F3A22">{{sessWrong}} ✗</b></span>
+  <span style="margin-left:auto">Para repasar: <b>{{dueCount}}</b> verbos</span>
+ </div>
+ <sc-if value="{{hasQ}}" hint-placeholder-val="{{false}}">
+ <div style="background:#fff;border:1px solid #E7E3DA;border-radius:14px;padding:22px;animation:fadein .2s ease">
+  <div style="font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#8A857B">{{qTypeLabel}}</div>
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;margin:8px 0 2px">{{qMain}}</div>
+  <div style="color:#8A857B;font-size:14px">{{qSub}}</div>
+  <div style="margin-top:10px;color:var(--acc,#B54A2B);font-weight:600;font-size:15px">{{qAsk}}</div>
+  <sc-if value="{{qHasInput}}" hint-placeholder-val="{{false}}">
+   <div style="display:flex;gap:8px;margin-top:14px">
+    <input value="{{tInput}}" onChange="{{onTInput}}" onKeyDown="{{onTKey}}" autoFocus="{{true}}" autoCapitalize="none" autoComplete="off" placeholder="escribe aquí…" style="flex:1;min-width:100px;padding:11px 14px;border:1.5px solid #E1DCD2;border-radius:10px;font-size:16px;font-family:'IBM Plex Mono',monospace;background:#FDFCFA;outline-color:var(--acc,#B54A2B)"></input>
+    <button onClick="{{submitFill}}" style="padding:11px 16px;border-radius:10px;border:none;background:var(--acc,#B54A2B);color:#fff;cursor:pointer;font-weight:600;font-size:14px">Comprobar</button>
+   </div>
+   <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+    <sc-for list="{{accents}}" as="c" hint-placeholder-count="6">
+     <button onClick="{{c.add}}" style="width:36px;height:32px;border-radius:8px;border:1px solid #E1DCD2;background:#fff;cursor:pointer;font-size:15px;font-family:'IBM Plex Mono',monospace">{{c.ch}}</button>
+    </sc-for>
+   </div>
+  </sc-if>
+  <sc-if value="{{qHasOptions}}" hint-placeholder-val="{{false}}">
+   <div style="display:grid;gap:8px;margin-top:16px">
+    <sc-for list="{{testOptions}}" as="o" hint-placeholder-count="4">
+     <button onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button>
+    </sc-for>
+   </div>
+  </sc-if>
+  <sc-if value="{{showFeedback}}" hint-placeholder-val="{{false}}">
+   <div style="{{fbStyle}}">
+    <b>{{fbTitle}}</b> <span style="font-family:'IBM Plex Mono',monospace;font-weight:600">{{fbAnswer}}</span>
+    <div style="font-size:13px;margin-top:2px">{{fbNote}}</div>
+   </div>
+   <button onClick="{{nextQ}}" style="width:100%;margin-top:12px;padding:12px;border-radius:10px;border:none;background:#1B1A17;color:#fff;cursor:pointer;font-weight:600;font-size:14px">Siguiente →</button>
+  </sc-if>
+ </div>
+ <p style="font-size:12.5px;color:#8A857B;margin-top:14px">Los verbos que falles vuelven pronto (repaso espaciado). Acentos: puedes responder sin tilde — te avisaré.</p>
+ </sc-if>
+</main>
+</sc-if>
+
+<sc-if value="{{isFlash}}" hint-placeholder-val="{{false}}">
+<main style="max-width:560px;margin:0 auto;padding:20px 16px 70px;animation:fadein .25s ease">
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+  <sc-for list="{{flashFilters}}" as="f" hint-placeholder-count="4">
+   <button onClick="{{f.go}}" style="{{f.style}}">{{f.label}}</button>
+  </sc-for>
+ </div>
+ <sc-if value="{{hasCard}}" hint-placeholder-val="{{false}}">
+  <div onClick="{{flip}}" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;min-height:270px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:24px;text-align:center;gap:10px" style-hover="border-color:var(--acc,#B54A2B)">
+   <sc-if value="{{notFlipped}}" hint-placeholder-val="{{true}}">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:600">{{cardFront}}</div>
+    <div style="font-size:12.5px;color:#8A857B">toca para girar</div>
+   </sc-if>
+   <sc-if value="{{flipped}}" hint-placeholder-val="{{false}}">
+    <div style="font-size:22px;font-weight:600">{{cardTr}}</div>
+    <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;width:100%;max-width:320px">
+     <sc-for list="{{cardRows}}" as="r" hint-placeholder-count="5">
+      <div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;border-bottom:1px dashed #F2EFE8;padding:3px 0">
+       <span style="color:#8A857B;font-size:12.5px">{{r.k}}</span>
+       <span style="font-family:'IBM Plex Mono',monospace;font-weight:500">{{r.v}}</span>
+      </div>
+     </sc-for>
+    </div>
+   </sc-if>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+   <button onClick="{{cardAgain}}" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--acc,#B54A2B);background:#fff;color:var(--acc,#B54A2B);cursor:pointer;font-weight:600;font-size:14px">Otra vez ⚑</button>
+   <button onClick="{{cardKnow}}" style="flex:1;padding:12px;border-radius:10px;border:none;background:#1B1A17;color:#fff;cursor:pointer;font-weight:600;font-size:14px">La sé →</button>
+  </div>
+  <div style="text-align:center;font-size:12.5px;color:#8A857B;margin-top:10px">{{cardPos}}</div>
+ </sc-if>
+ <sc-if value="{{noCard}}" hint-placeholder-val="{{false}}">
+  <div style="color:#8A857B;font-size:14px;padding:30px 0">No hay tarjetas en este filtro.</div>
+ </sc-if>
+</main>
+</sc-if>
+
+<sc-if value="{{isVocab}}" hint-placeholder-val="{{false}}">
+<main style="max-width:1060px;margin:0 auto;padding:20px 16px 70px;animation:fadein .25s ease">
+ <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+  <input value="{{vocQ}}" onChange="{{onVocSearch}}" autoCapitalize="none" autoComplete="off" placeholder="Buscar palabra… (casa, to buy)" style="flex:1;min-width:200px;padding:11px 14px;border:1.5px solid #E1DCD2;border-radius:10px;font-size:15px;background:#fff;outline-color:var(--acc,#2B5FB5)"></input>
+  <button onClick="{{vocToggleHide}}" style="{{vocToggleStyle}}">Ocultar inglés</button>
+  <button onClick="{{vocStartPractice}}" style="padding:11px 16px;border-radius:10px;border:none;background:var(--acc,#2B5FB5);color:#fff;cursor:pointer;font-size:14px;font-weight:600">Practicar tarjetas</button>
+ </div>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+  <sc-for list="{{vocChips}}" as="c" hint-placeholder-count="3">
+   <button onClick="{{c.go}}" style="{{c.style}}">{{c.label}}</button>
+  </sc-for>
+ </div>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+  <sc-for list="{{vocCatChips}}" as="c" hint-placeholder-count="8">
+   <button onClick="{{c.go}}" style="{{c.style}}">{{c.label}}</button>
+  </sc-for>
+ </div>
+
+ <sc-if value="{{vocBrowsing}}" hint-placeholder-val="{{true}}">
+  <div style="font-size:12.5px;color:#8A857B;margin-bottom:10px">{{vocCount}} palabras · {{vocTotal}} en total · {{vocCatN}} temas · toca una tarjeta para revelar cuando el inglés está oculto</div>
+  <sc-if value="{{vocEmpty}}" hint-placeholder-val="{{false}}">
+   <div style="color:#8A857B;font-size:14px;padding:24px 0">No hay palabras en este filtro todavía.</div>
+  </sc-if>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:9px">
+   <sc-for list="{{vocWords}}" as="w" hint-placeholder-count="12">
+    <div onClick="{{w.onCard}}" style="{{w.cardStyle}}">
+     <div style="display:flex;align-items:baseline;gap:7px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:16px">{{w.es}}</span>
+      <sc-if value="{{w.hasG}}" hint-placeholder-val="{{false}}">
+       <span style="font-size:10.5px;font-weight:600;color:var(--acc,#2B5FB5);border:1px solid #D7E0F2;border-radius:4px;padding:0 5px">{{w.g}}</span>
+      </sc-if>
+     </div>
+     <div style="{{w.enStyle}}">{{w.en}}</div>
+     <div style="display:flex;gap:8px;margin-top:2px">
+      <button onClick="{{w.toggleStar}}" title="Importante" style="{{w.starStyle}}">★</button>
+      <button onClick="{{w.toggleBook}}" title="Repasar" style="{{w.bookStyle}}">⚑</button>
+     </div>
+    </div>
+   </sc-for>
+  </div>
+ </sc-if>
+
+ <sc-if value="{{vocPracticing}}" hint-placeholder-val="{{false}}">
+  <div style="max-width:520px;margin:0 auto">
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <span style="font-size:12.5px;color:#8A857B">{{vocCardCat}}</span>
+    <button onClick="{{vocExit}}" style="padding:6px 11px;border-radius:8px;border:1px solid #E1DCD2;background:#fff;cursor:pointer;font-size:12.5px">Salir</button>
+   </div>
+   <div onClick="{{vocDoFlip}}" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:24px;text-align:center;gap:10px" style-hover="border-color:var(--acc,#2B5FB5)">
+    <sc-if value="{{vocNoFlip}}" hint-placeholder-val="{{true}}">
+     <div style="display:flex;align-items:baseline;gap:8px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:32px;font-weight:600">{{vocCardEs}}</span>
+      <sc-if value="{{vocCardHasG}}" hint-placeholder-val="{{false}}"><span style="font-size:13px;font-weight:600;color:var(--acc,#2B5FB5)">{{vocCardG}}</span></sc-if>
+     </div>
+     <div style="font-size:12.5px;color:#8A857B">toca para ver la traducción</div>
+    </sc-if>
+    <sc-if value="{{vocFlip}}" hint-placeholder-val="{{false}}">
+     <div style="font-size:26px;font-weight:600">{{vocCardEn}}</div>
+     <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:#8A857B">{{vocCardEs}}</div>
+    </sc-if>
+   </div>
+   <div style="display:flex;gap:10px;margin-top:14px">
+    <button onClick="{{vocAgain}}" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--acc,#2B5FB5);background:#fff;color:var(--acc,#2B5FB5);cursor:pointer;font-weight:600;font-size:14px">Otra vez ⚑</button>
+    <button onClick="{{vocNext}}" style="flex:1;padding:12px;border-radius:10px;border:none;background:#1B1A17;color:#fff;cursor:pointer;font-weight:600;font-size:14px">La sé →</button>
+   </div>
+   <div style="text-align:center;font-size:12.5px;color:#8A857B;margin-top:10px">{{vocPos}}</div>
+  </div>
+ </sc-if>
+</main>
+</sc-if>
+
+<sc-if value="{{isDict}}" hint-placeholder-val="{{false}}">
+<main style="max-width:720px;margin:0 auto;padding:20px 16px 70px;animation:fadein .25s ease">
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+  <sc-for list="{{dictDirs}}" as="d" hint-placeholder-count="2">
+   <button onClick="{{d.go}}" style="{{d.style}}">{{d.label}}</button>
+  </sc-for>
+ </div>
+ <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-start">
+  <div style="position:relative;flex:1;min-width:200px">
+   <input value="{{dictQ}}" onChange="{{onDictInput}}" onKeyDown="{{onDictKey}}" onBlur="{{dictBlur}}" autoCapitalize="none" autoComplete="off" placeholder="{{dictPlaceholder}}" style="width:100%;padding:12px 15px;border:1.5px solid #E1DCD2;border-radius:10px;font-size:16px;background:#fff;outline-color:var(--acc,#2B5FB5)"></input>
+   <sc-if value="{{dictSuggOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;background:#fff;border:1px solid #E1DCD2;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);overflow:hidden">
+     <sc-for list="{{dictSugg}}" as="s" hint-placeholder-count="4">
+      <button onMouseDown="{{s.go}}" style="display:block;width:100%;text-align:left;padding:9px 14px;border:none;border-bottom:1px solid #F2EFE8;background:#fff;cursor:pointer;font-size:15px;font-family:'IBM Plex Mono',monospace;color:#1B1A17" style-hover="background:#F7F4EC">{{s.label}}</button>
+     </sc-for>
+    </div>
+   </sc-if>
+  </div>
+  <button onClick="{{dictSearch}}" style="padding:12px 18px;border-radius:10px;border:none;background:var(--acc,#2B5FB5);color:#fff;cursor:pointer;font-weight:600;font-size:14px">Buscar</button>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  <sc-if value="{{dictHasRecent}}" hint-placeholder-val="{{false}}">
+   <span style="font-size:11.5px;color:#8A857B">recientes:</span>
+   <sc-for list="{{dictRecent}}" as="r" hint-placeholder-count="4">
+    <button onClick="{{r.go}}" style="{{r.style}}">{{r.label}}</button>
+   </sc-for>
+  </sc-if>
+ </div>
+
+ <sc-if value="{{dictIdle}}" hint-placeholder-val="{{true}}">
+  <div style="text-align:center;color:#8A857B;padding:40px 20px">
+   <div style="font-size:40px;margin-bottom:8px">📖</div>
+   <div style="font-size:15px;font-weight:600;color:#5C574D">Diccionario español bilingüe</div>
+   <div style="font-size:13.5px;margin-top:4px;max-width:400px;margin-left:auto;margin-right:auto;text-wrap:pretty">Escribe cualquier palabra en español para ver su pronunciación, significado en inglés y en español, ejemplos y sinónimos.</div>
+  </div>
+ </sc-if>
+
+ <sc-if value="{{dictLoading}}" hint-placeholder-val="{{false}}">
+  <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:26px;text-align:center;color:#8A857B;font-size:14px">Buscando <b>{{dictQ}}</b>…</div>
+ </sc-if>
+
+ <sc-if value="{{dictError}}" hint-placeholder-val="{{false}}">
+  <div style="background:#FAE8E2;border:1px solid #E0A28D;border-radius:12px;padding:16px;color:#8F3A22;font-size:14px">{{dictError}}</div>
+ </sc-if>
+
+ <sc-if value="{{dictNotFound}}" hint-placeholder-val="{{false}}">
+  <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:20px;font-size:14px">
+   No se encontró <b style="font-family:'IBM Plex Mono',monospace">{{dictNfWord}}</b>.
+   <sc-if value="{{dictNfHasSug}}" hint-placeholder-val="{{false}}">
+    <button onClick="{{dictNfSugGo}}" style="display:block;margin-top:8px;padding:8px 12px;border-radius:8px;border:1.5px solid var(--acc,#2B5FB5);background:#fff;color:var(--acc,#2B5FB5);cursor:pointer;font-size:13.5px;font-weight:600">{{dictNfSug}}</button>
+   </sc-if>
+  </div>
+ </sc-if>
+
+ <sc-if value="{{dictHasEntry}}" hint-placeholder-val="{{false}}">
+  <article style="animation:fadein .2s ease">
+   <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:18px 20px;margin-bottom:12px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+     <h1 style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600">{{dictWord}}</h1>
+     <span style="font-size:16px;color:#8A857B;font-family:'IBM Plex Mono',monospace">{{dictPron}}</span>
+     <sc-if value="{{dictHasConj}}" hint-placeholder-val="{{false}}">
+      <button onClick="{{dictConjLink}}" style="margin-left:auto;padding:7px 12px;border-radius:8px;border:1.5px solid var(--acc,#2B5FB5);background:#fff;color:var(--acc,#2B5FB5);cursor:pointer;font-size:13px;font-weight:600">Ver conjugación →</button>
+     </sc-if>
+    </div>
+    <sc-if value="{{dictHasSyll}}" hint-placeholder-val="{{false}}">
+     <div style="font-size:12.5px;color:#8A857B;margin-top:4px">{{dictSyll}}</div>
+    </sc-if>
+   </div>
+
+   <sc-for list="{{dictSenses}}" as="s" hint-placeholder-count="2">
+    <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:14px 18px;margin-bottom:10px">
+     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span style="width:22px;height:22px;border-radius:6px;background:var(--acc,#2B5FB5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace">{{s.num}}</span>
+      <span style="font-size:12.5px;font-style:italic;color:#8A857B">{{s.pos}}</span>
+      <sc-if value="{{s.hasGender}}" hint-placeholder-val="{{false}}">
+       <span style="font-size:11px;font-weight:600;color:var(--acc,#2B5FB5);border:1px solid #D7E0F2;border-radius:5px;padding:1px 6px">{{s.gender}}</span>
+      </sc-if>
+     </div>
+     <div style="font-size:16px;font-weight:600">{{s.english}}</div>
+     <div style="font-size:14px;color:#5C574D;margin-top:3px;text-wrap:pretty">{{s.spanish}}</div>
+     <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+      <sc-for list="{{s.examples}}" as="e" hint-placeholder-count="1">
+       <div style="border-left:2px solid #E7E3DA;padding-left:10px">
+        <div style="font-size:14.5px;font-weight:500">{{e.es}}</div>
+        <div style="font-size:13px;color:#8A857B">{{e.en}}</div>
+       </div>
+      </sc-for>
+     </div>
+    </div>
+   </sc-for>
+
+   <sc-if value="{{dictHasSyn}}" hint-placeholder-val="{{false}}">
+    <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:12px 18px;margin-bottom:10px">
+     <span style="font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#8A857B">Sinónimos</span>
+     <div style="font-size:14px;margin-top:3px;font-family:'IBM Plex Mono',monospace">{{dictSyn}}</div>
+    </div>
+   </sc-if>
+   <sc-if value="{{dictHasAnt}}" hint-placeholder-val="{{false}}">
+    <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:12px 18px;margin-bottom:10px">
+     <span style="font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#8A857B">Antónimos</span>
+     <div style="font-size:14px;margin-top:3px;font-family:'IBM Plex Mono',monospace">{{dictAnt}}</div>
+    </div>
+   </sc-if>
+   <sc-if value="{{dictHasNote}}" hint-placeholder-val="{{false}}">
+    <div style="background:#F7F4EC;border:1px solid #E7E3DA;border-radius:12px;padding:12px 18px;font-size:13.5px;color:#5C574D;text-wrap:pretty">💡 {{dictNote}}</div>
+   </sc-if>
+  </article>
+ </sc-if>
+</main>
+</sc-if>
+
+<sc-if value="{{isCheat}}" hint-placeholder-val="{{false}}">
+<main style="max-width:1060px;margin:0 auto;padding:20px 16px 70px;animation:fadein .25s ease">
+ <h1 style="font-size:20px;margin:0 0 8px">Chuleta — gramática A1</h1>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  <sc-for list="{{cheatPageTabs}}" as="t" hint-placeholder-count="2">
+   <button onClick="{{t.go}}" style="{{t.style}}">{{t.label}}</button>
+  </sc-for>
+ </div>
+
+ <sc-for list="{{cheatGrammar}}" as="G" hint-placeholder-count="5">
+  <section style="margin-top:24px">
+   <h2 style="font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc,#2B5FB5);margin:0 0 10px">{{G.group}}</h2>
+   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+    <sc-for list="{{G.cards}}" as="c" hint-placeholder-count="3">
+     <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-weight:700;font-size:15px">{{c.name}}</div>
+      <div style="font-size:13.5px;color:#5C574D;line-height:1.45;text-wrap:pretty">{{c.rule}}</div>
+      <sc-for list="{{c.points}}" as="p" hint-placeholder-count="2">
+       <div style="font-size:12.5px;color:#5C574D;font-family:'IBM Plex Mono',monospace;background:#F7F4EC;border-radius:6px;padding:4px 8px">{{p}}</div>
+      </sc-for>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-top:2px">
+       <sc-for list="{{c.examples}}" as="e" hint-placeholder-count="2">
+        <div style="border-left:2px solid var(--acc,#2B5FB5);padding-left:9px">
+         <div style="font-size:14px;font-weight:600">{{e.es}}</div>
+         <div style="font-size:12.5px;color:#8A857B">{{e.en}}</div>
+        </div>
+       </sc-for>
+      </div>
+     </div>
+    </sc-for>
+   </div>
+  </section>
+ </sc-for>
+
+ <sc-if value="{{cheatP2}}" hint-placeholder-val="{{false}}">
+ <h2 style="font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc,#2B5FB5);margin:26px 0 4px">Conjugación — terminaciones regulares</h2>
+ <p style="font-size:12.5px;color:#8A857B;margin:0 0 10px">Orden: yo · tú · él/ella · nosotros/as · vosotros/as · ellos/ellas.</p>
+ <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+  <sc-for list="{{cheatTables}}" as="c" hint-placeholder-count="6">
+   <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:12px 16px">
+    <div style="font-weight:600;font-size:15px;margin-bottom:8px">{{c.name}}</div>
+    <div style="display:flex;flex-direction:column;gap:5px;font-size:13px">
+     <div style="display:flex;gap:8px"><span style="color:var(--acc,#B54A2B);font-weight:600;width:28px">-ar</span><span style="font-family:'IBM Plex Mono',monospace">{{c.ar}}</span></div>
+     <div style="display:flex;gap:8px"><span style="color:var(--acc,#B54A2B);font-weight:600;width:28px">-er</span><span style="font-family:'IBM Plex Mono',monospace">{{c.er}}</span></div>
+     <div style="display:flex;gap:8px"><span style="color:var(--acc,#B54A2B);font-weight:600;width:28px">-ir</span><span style="font-family:'IBM Plex Mono',monospace">{{c.ir}}</span></div>
+    </div>
+   </div>
+  </sc-for>
+ </div>
+ <h2 style="font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc,#2B5FB5);margin:26px 0 10px">Conjugación — formación de tiempos compuestos</h2>
+ <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+  <sc-for list="{{cheatRules}}" as="r" hint-placeholder-count="6">
+   <div style="background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:12px 16px">
+    <div style="font-weight:600;font-size:14.5px">{{r.name}}</div>
+    <div style="font-size:13px;color:#5C574D;margin-top:3px">{{r.rule}}</div>
+    <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--acc,#B54A2B);margin-top:5px">{{r.ex}}</div>
+   </div>
+  </sc-for>
+ </div>
+ </sc-if>
+</main>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:820},
+&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2B5FB5&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#B54A2B&quot;,&quot;#2E6E4E&quot;,&quot;#2B5FB5&quot;,&quot;#7A3E9D&quot;],&quot;section&quot;:&quot;Apariencia&quot;},
+&quot;showVosotros&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Contenido&quot;},
+&quot;hideTranslations&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Contenido&quot;}}">
+const MONO="'IBM Plex Mono',monospace";
+const HAB={pres:['he','has','ha','hemos','habéis','han'],imp:['había','habías','había','habíamos','habíais','habían'],fut:['habré','habrás','habrá','habremos','habréis','habrán'],cond:['habría','habrías','habría','habríamos','habríais','habrían']};
+const EST=['estoy','estás','está','estamos','estáis','están'];
+const IRP=['voy','vas','va','vamos','vais','van'];
+const PP=['yo','tú','él/ella/Ud.','nosotros/as','vosotros/as','ellos/Uds.'];
+const PIMP=['tú','usted','nosotros/as','vosotros/as','ustedes'];
+const TN={presente:'Presente',preterito:'Pretérito indefinido',imperfecto:'Imperfecto',futuro:'Futuro simple',condicional:'Condicional',subj_presente:'Presente de subjuntivo'};
+const norm=s=>(s||'').trim().toLowerCase();
+const strip=s=>norm(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+class Component extends DCLogic {
+  state={view:'home',verbs:null,q:'',filter:'all',curIdx:0,flags:{},
+    stats:{answered:0,correct:0,days:{},srs:{}},
+    test:null,tInput:'',lastRes:null,sess:{r:0,w:0},
+    flash:{i:0,flip:false,filter:'all'},
+    dict:{q:'',entry:null,loading:false,error:'',word:'',recent:[],dir:'es',sugg:[],suggOpen:false},
+    vocab:null,vflags:{},voc:{cat:'all',q:'',hideEn:false,practice:false,i:0,flip:false,revealed:{}}};
+  _sc={};
+  componentDidMount(){
+    fetch('data/verbs.json').then(r=>r.json()).then(d=>{
+      let flags={},stats=this.state.stats;
+      try{flags=JSON.parse(localStorage.getItem('svt_flags'))||{}}catch(e){}
+      try{const s=JSON.parse(localStorage.getItem('svt_stats'));if(s)stats=Object.assign({answered:0,correct:0,days:{},srs:{}},s)}catch(e){}
+      this.setState({verbs:d.verbs,flags,stats});
+    }).catch(e=>console.error('verbs.json load failed',e));
+    fetch('data/words_es.json').then(r=>r.json()).then(w=>{this._wes=w}).catch(()=>{});
+    fetch('data/words_en.json').then(r=>r.json()).then(w=>{this._wen=w}).catch(()=>{});
+    fetch('data/vocab.json').then(r=>r.json()).then(d=>{
+      let vflags={};try{vflags=JSON.parse(localStorage.getItem('svt_vflags'))||{}}catch(e){}
+      this.setState({vocab:d,vflags});
+    }).catch(e=>console.error('vocab.json load failed',e));
+  }
+  save(){try{localStorage.setItem('svt_flags',JSON.stringify(this.state.flags));localStorage.setItem('svt_stats',JSON.stringify(this.state.stats))}catch(e){}}
+  vToggle(es,k,e){if(e)e.stopPropagation();const vf=Object.assign({},this.state.vflags);const f=Object.assign({},vf[es]);f[k]=!f[k];vf[es]=f;this.setState({vflags:vf},()=>{try{localStorage.setItem('svt_vflags',JSON.stringify(this.state.vflags))}catch(e){}})}
+  vAllWords(){const d=this.state.vocab;if(!d)return [];const out=[];for(const cat in d.categories)for(const w of d.categories[cat])out.push(Object.assign({cat},w));return out}
+  vSetCat(cat){this.setState({voc:Object.assign({},this.state.voc,{cat,practice:false,i:0,flip:false})})}
+  go(view){if(view==='test'&&!this.state.test){this.setState({view});this.genQ();return}this.setState({view})}
+  openVerb(i){this.setState({curIdx:i,view:'verb'});window.scrollTo(0,0)}
+  random(){const V=this.state.verbs||[];if(!V.length)return;let i=Math.floor(Math.random()*V.length);if(V.length>1&&i===this.state.curIdx)i=(i+1)%V.length;this.openVerb(i)}
+  flag(inf){return this.state.flags[inf]||{}}
+  toggle(inf,k,e){if(e)e.stopPropagation();const flags=Object.assign({},this.state.flags);const f=Object.assign({},flags[inf]);f[k]=!f[k];flags[inf]=f;this.setState({flags},()=>this.save())}
+  streak(){const d=this.state.stats.days;const key=t=>t.toISOString().slice(0,10);let n=0;const t=new Date();if(!d[key(t)])t.setDate(t.getDate()-1);while(d[key(t)]){n++;t.setDate(t.getDate()-1)}return n}
+  dueVerbs(){const V=this.state.verbs||[];const srs=this.state.stats.srs;const now=Date.now();return V.filter(v=>{const s=srs[v.infinitive];return (s&&s.due<=now&&s.box<3)||this.flag(v.infinitive).book})}
+  personIdx(){return this.props.showVosotros===false?[0,1,2,3,5]:[0,1,2,3,4,5]}
+  fs(irr){return {fontFamily:MONO,fontWeight:500,fontSize:'14px',color:irr?'var(--acc,#B54A2B)':'#1B1A17',background:irr?'#F9EEE9':'transparent',padding:'0 4px',borderRadius:'4px',textAlign:'right'}}
+  buildGroups(v){
+    const idx=this.personIdx();
+    const mk=(forms,irr)=>idx.map(i=>({person:PP[i],form:forms[i],style:this.fs(irr&&irr[i])}));
+    const cmp=(aux,tail,auxIrr)=>idx.map(i=>({person:PP[i],form:aux[i]+' '+tail,style:this.fs(auxIrr)}));
+    const impIdx=this.props.showVosotros===false?[0,1,2,4]:[0,1,2,3,4];
+    const mkImp=(forms,irr)=>impIdx.map(i=>({person:PIMP[i],form:forms[i],style:this.fs(irr&&irr[i])}));
+    const T=v.tenses,ir=v.irr||{};
+    return [
+      {name:'Presente',tenses:[
+        {name:'Presente',hint:'hábitos y hechos — I speak',rows:mk(T.presente,ir.presente)},
+        {name:'Presente continuo',hint:'ahora mismo — estar + gerundio',rows:cmp(EST,v.gerund,v.gerundIrr)}]},
+      {name:'Pasado',tenses:[
+        {name:'Pretérito indefinido',hint:'acción terminada — I spoke',rows:mk(T.preterito,ir.preterito)},
+        {name:'Pretérito imperfecto',hint:'pasado habitual — I used to speak',rows:mk(T.imperfecto,ir.imperfecto)},
+        {name:'Pretérito perfecto',hint:'pasado conectado al presente — I have spoken',rows:cmp(HAB.pres,v.participle,v.participleIrr)},
+        {name:'Pluscuamperfecto',hint:'pasado antes de otro pasado — I had spoken',rows:cmp(HAB.imp,v.participle,v.participleIrr)}]},
+      {name:'Futuro',tenses:[
+        {name:'Futuro informal (ir a)',hint:'planes — el más usado al hablar',rows:idx.map(i=>({person:PP[i],form:IRP[i]+' a '+v.infinitive,style:this.fs(false)}))},
+        {name:'Futuro simple',hint:'predicciones y promesas — I will speak',rows:mk(T.futuro,ir.futuro)},
+        {name:'Futuro perfecto',hint:'habré + participio — I will have spoken',rows:cmp(HAB.fut,v.participle,v.participleIrr)}]},
+      {name:'Condicional',tenses:[
+        {name:'Condicional simple',hint:'would — cortesía e hipótesis',rows:mk(T.condicional,ir.condicional)},
+        {name:'Condicional perfecto',hint:'habría + participio — I would have spoken',rows:cmp(HAB.cond,v.participle,v.participleIrr)}]},
+      {name:'Subjuntivo',tenses:[
+        {name:'Presente de subjuntivo',hint:'deseos y dudas — que yo hable',rows:mk(T.subj_presente,ir.subj_presente)},
+        {name:'Imperfecto de subjuntivo',hint:'hipótesis — si yo hablara',rows:mk(T.subj_imperfecto,ir.subj_imperfecto)}]},
+      {name:'Imperativo',tenses:[
+        {name:'Afirmativo',hint:'órdenes — ¡Habla!',rows:mkImp(v.imperative.affirmative,v.imperative.affIrr)},
+        {name:'Negativo',hint:'no + subjuntivo — ¡No hables!',rows:mkImp(v.imperative.negative,v.imperative.negIrr)}]}
+    ];
+  }
+  dictCache(){try{return JSON.parse(localStorage.getItem('svt_dict'))||{}}catch(e){return {}}}
+  localMatch(p,dir){
+    const list=dir==='en'?(this._wen||[]):(this._wes||[]);
+    const ps=strip(p);
+    const starts=[],contains=[];
+    for(const w of list){const sw=strip(w);if(sw.startsWith(ps))starts.push(w);else if(sw.includes(ps))contains.push(w);if(starts.length>=8)break;}
+    return [...starts,...contains].slice(0,8);
+  }
+  onDictType(raw){
+    const dir=this.state.dict.dir;
+    const p=norm(raw);
+    clearTimeout(this._suggT);
+    if(p.length<1){this.setState({dict:Object.assign({},this.state.dict,{q:raw,sugg:[],suggOpen:false})});return}
+    const local=this.localMatch(p,dir);
+    this.setState({dict:Object.assign({},this.state.dict,{q:raw,sugg:local,suggOpen:true})});
+    // fall back to Claude only if local is thin and prefix is meaningful
+    if(local.length<4&&p.length>=2){
+      const key=dir+':'+p;
+      if(this._sc[key])return;
+      this._suggT=setTimeout(()=>this.suggest(p,dir,raw),450);
+    }
+  }
+  async suggest(p,dir,raw){
+    const key=dir+':'+p;
+    const prompt=dir==='en'
+      ? 'Return ONLY a JSON array (no markdown) of up to 8 common English words that begin with "'+p+'", most frequent first, lowercase, no duplicates. Example: ["run","running","runner"]. If none, return [].'
+      : 'Devuelve SOLO un array JSON (sin markdown) de hasta 8 palabras españolas comunes que empiecen con "'+p+'", las más frecuentes primero, en minúscula, sin duplicados. Ejemplo: ["correr","corrección","correcto"]. Si no hay, devuelve [].';
+    try{
+      const txt=await window.claude.complete({messages:[{role:'user',content:prompt}],max_tokens:200});
+      let s=txt.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
+      const a=s.indexOf('['),b=s.lastIndexOf(']');if(a>=0)s=s.slice(a,b+1);
+      let arr=JSON.parse(s);if(!Array.isArray(arr))arr=[];
+      arr=arr.filter(w=>typeof w==='string').map(w=>w.toLowerCase());
+      const merged=[...new Set([...this.localMatch(p,dir),...arr])].slice(0,8);
+      this._sc[key]=merged;
+      if(norm(this.state.dict.q)===p)this.setState({dict:Object.assign({},this.state.dict,{sugg:merged,suggOpen:true})});
+    }catch(e){}
+  }
+  async lookup(raw){
+    const word=norm(raw);if(!word)return;
+    const d=Object.assign({},this.state.dict);
+    const recent=[word,...d.recent.filter(w=>w!==word)].slice(0,12);
+    clearTimeout(this._suggT);
+    this.setState({dict:Object.assign({},d,{loading:true,error:'',entry:null,word,q:raw,recent,sugg:[],suggOpen:false})});
+    const dir=this.state.dict.dir;
+    const cache=this.dictCache();const ck=dir+':'+word;
+    if(cache[ck]){this.setState({dict:Object.assign({},this.state.dict,{loading:false,entry:cache[ck]})});return}
+    const esPrompt='Eres un diccionario español bilingüe. Para la palabra española "'+word+'" devuelve SOLO un objeto JSON válido (sin markdown, sin texto extra) con esta forma exacta:\n'+
+      '{"headword":"la palabra española","pronunciation":"IPA o pronunciación aproximada","syllables":"separación silábica con la tónica en mayúscula","found":true,'+
+      '"senses":[{"pos":"sustantivo|verbo|adjetivo|adverbio|...","gender":"m|f|mf|null","english":["traducción(es) al inglés"],"spanish":"definición en español","examples":[{"es":"frase de ejemplo en español","en":"traducción al inglés"}]}],'+
+      '"synonyms":["sinónimos en español"],"antonyms":["antónimos en español"],"note":"nota de uso, registro o coloquialismo; o null"}\n'+
+      'Incluye todos los sentidos comunes (máx 4). Cada sentido con al menos 1 ejemplo real. Si la palabra no existe en español, devuelve {"found":false,"headword":"'+word+'","suggestion":"palabra correcta más probable o null"}.';
+    const enPrompt='You are an English→Spanish dictionary. For the English word "'+word+'" return ONLY a valid JSON object (no markdown, no extra text) with this exact shape:\n'+
+      '{"headword":"the main Spanish translation","pronunciation":"approximate pronunciation of the Spanish headword","syllables":"Spanish headword split into syllables, stressed one uppercase","found":true,'+
+      '"senses":[{"pos":"noun|verb|adjective|adverb|...","gender":"m|f|mf|null (gender of the Spanish translation if a noun)","english":["the Spanish translation(s) for this sense"],"spanish":"a short Spanish definition/gloss of this sense","examples":[{"es":"example sentence in Spanish using the translation","en":"its English translation"}]}],'+
+      '"synonyms":["Spanish synonyms of the translation"],"antonyms":["Spanish antonyms"],"note":"usage note in English about which Spanish word to use when; or null"}\n'+
+      'The "english" array must hold the SPANISH translations (that is what the user needs). Include all common senses (max 4), each with at least 1 real example. If the English word is misspelled, return {"found":false,"headword":"'+word+'","suggestion":"most likely correct English word or null"}.';
+    const prompt=dir==='en'?enPrompt:esPrompt;
+    try{
+      const txt=await window.claude.complete({messages:[{role:'user',content:prompt}],max_tokens:1500});
+      let s=txt.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
+      const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0)s=s.slice(a,b+1);
+      const entry=JSON.parse(s);
+      if(entry.found!==false){const c=this.dictCache();c[ck]=entry;try{localStorage.setItem('svt_dict',JSON.stringify(c))}catch(e){}}
+      this.setState({dict:Object.assign({},this.state.dict,{loading:false,entry})});
+    }catch(e){
+      this.setState({dict:Object.assign({},this.state.dict,{loading:false,error:'No se pudo cargar. Revisa tu conexión e inténtalo de nuevo.'})});
+    }
+  }
+  shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+  genQ(){
+    const V=this.state.verbs;if(!V||!V.length)return;
+    const srs=this.state.stats.srs,now=Date.now();
+    const due=V.filter(v=>{const s=srs[v.infinitive];return s&&s.due<=now&&s.box<3});
+    const pool=(due.length&&Math.random()<0.6)?due:V;
+    const v=pool[Math.floor(Math.random()*pool.length)];
+    const types=['fill','mc','rev','trans'];
+    const type=types[Math.floor(Math.random()*types.length)];
+    const keys=Object.keys(TN);
+    const tk=keys[Math.floor(Math.random()*keys.length)];
+    const pidx=this.personIdx();
+    const pi=pidx[Math.floor(Math.random()*pidx.length)];
+    const ans=v.tenses[tk][pi];
+    const q={type,inf:v.infinitive,tr:v.translation,tense:TN[tk],person:PP[pi],answer:ans};
+    if(type==='mc'){
+      const opts=new Set([ans]);let g=0;
+      while(opts.size<4&&g++<80){const t2=keys[Math.floor(Math.random()*keys.length)];const p2=pidx[Math.floor(Math.random()*pidx.length)];opts.add(v.tenses[t2][p2])}
+      q.options=this.shuffle([...opts]);
+    }
+    if(type==='rev'){
+      q.shownForm=ans;
+      const correct=TN[tk]+' · '+PP[pi];
+      const opts=new Set([correct]);let g=0;
+      while(opts.size<4&&g++<80){const t2=keys[Math.floor(Math.random()*keys.length)];const p2=pidx[Math.floor(Math.random()*pidx.length)];if(v.tenses[t2][p2]!==ans)opts.add(TN[t2]+' · '+PP[p2])}
+      q.answer=correct;q.options=this.shuffle([...opts]);
+    }
+    if(type==='trans')q.answer=v.infinitive;
+    this.setState({test:q,tInput:'',lastRes:null});
+  }
+  answer(given){
+    const q=this.state.test;if(!q||this.state.lastRes)return;
+    const exact=norm(given)===norm(q.answer);
+    const soft=!exact&&q.type!=='rev'&&strip(given)===strip(q.answer);
+    const ok=exact||soft;
+    const st=JSON.parse(JSON.stringify(this.state.stats));
+    const today=new Date().toISOString().slice(0,10);
+    st.answered++;if(ok)st.correct++;st.days[today]=(st.days[today]||0)+1;
+    const s=st.srs[q.inf]||{box:0,due:0};
+    if(ok){s.box=Math.min(5,s.box+1);s.due=Date.now()+s.box*864e5}else{s.box=0;s.due=Date.now()}
+    st.srs[q.inf]=s;
+    const sess={r:this.state.sess.r+(ok?1:0),w:this.state.sess.w+(ok?0:1)};
+    this.setState({lastRes:{ok,soft,given},stats:st,sess},()=>this.save());
+  }
+  chipStyle(active){return {padding:'7px 13px',borderRadius:'999px',border:active?'1.5px solid var(--acc,#B54A2B)':'1.5px solid #E1DCD2',background:active?'#F9EEE9':'#fff',color:active?'var(--acc,#B54A2B)':'#5C574D',cursor:'pointer',fontSize:'13px',fontWeight:600}}
+  iconBtn(active,color){return {border:'none',background:'transparent',cursor:'pointer',fontSize:'16px',padding:'0 2px',color:active?color:'#D8D3C9',lineHeight:1}}
+  renderVals(){
+    const st=this.state,V=st.verbs;
+    const loading=!V;
+    const view=st.view;
+    const tabs=[['home','Panel'],['vocab','Vocabulario'],['dict','Diccionario'],['test','Test'],['flash','Tarjetas'],['cheat','Chuleta']].map(([id,label])=>({label,go:()=>this.go(id),
+      style:{padding:'7px 13px',borderRadius:'8px',border:'none',cursor:'pointer',fontSize:'13.5px',fontWeight:600,background:(view===id||(id==='home'&&view==='verb'))?'#1B1A17':'transparent',color:(view===id||(id==='home'&&view==='verb'))?'#fff':'#5C574D'}}));
+    const out={accent:this.props.accentColor??'#B54A2B',loading,tabs,
+      isHome:!loading&&view==='home',isVerb:!loading&&view==='verb',isTest:!loading&&view==='test',isFlash:!loading&&view==='flash',isCheat:!loading&&view==='cheat',isDict:!loading&&view==='dict',isVocab:!loading&&view==='vocab',
+      goHome:()=>this.go('home'),goTest:()=>this.go('test'),onRandom:()=>this.random(),
+      q:st.q,onSearch:e=>this.setState({q:e.target.value})};
+    if(loading)return out;
+    const hideTr=this.props.hideTranslations===true;
+    const flt=st.filter;
+    const match=v=>{const s=strip(st.q);return !s||strip(v.infinitive).includes(s)||strip(v.translation).includes(s)};
+    const passF=v=>{const f=this.flag(v.infinitive);return flt==='all'||(flt==='star'&&f.star)||(flt==='book'&&f.book)||(flt==='irr'&&v.irregular)};
+    out.filters=[['all','Todos'],['star','★ Importantes'],['book','⚑ Repasar'],['irr','Irregulares']].map(([id,label])=>({label,go:()=>this.setState({filter:id}),style:this.chipStyle(flt===id)}));
+    out.verbList=V.map((v,i)=>({inf:v.infinitive,tr:hideTr?'···':v.translation,
+      irrStyle:{display:v.irregular?'inline-block':'none',fontSize:'10.5px',fontWeight:600,color:'var(--acc,#B54A2B)',background:'#F9EEE9',borderRadius:'5px',padding:'1px 6px'},
+      masteryStyle:{height:'100%',width:(((st.stats.srs[v.infinitive]||{}).box||0)/5*100)+'%',background:'var(--acc,#B54A2B)',borderRadius:'2px'},
+      starStyle:this.iconBtn(this.flag(v.infinitive).star,'#D9930D'),
+      bookStyle:this.iconBtn(this.flag(v.infinitive).book,'#2762BF'),
+      toggleStar:e=>this.toggle(v.infinitive,'star',e),toggleBook:e=>this.toggle(v.infinitive,'book',e),
+      open:()=>this.openVerb(i)})).filter((_,i)=>match(V[i])&&passF(V[i]));
+    const acc=st.stats.answered?Math.round(st.stats.correct/st.stats.answered*100)+'%':'—';
+    out.stats=[{value:this.streak(),label:'días de racha'},{value:st.stats.answered,label:'respuestas totales'},{value:acc,label:'precisión'},{value:this.dueVerbs().length,label:'para repasar'}];
+    const cur=V[st.curIdx]||V[0];
+    if(cur){
+      const cf=this.flag(cur.infinitive);
+      out.curInf=cur.infinitive;out.curTr=hideTr?'···':cur.translation;out.curType=cur.type;
+      out.curIrrStyle={display:cur.irregular?'inline-block':'none',fontSize:'11px',fontWeight:600,color:'var(--acc,#B54A2B)',background:'#F9EEE9',borderRadius:'6px',padding:'2px 8px'};
+      out.curGer=cur.gerund;out.curPart=cur.participle;
+      out.curGerStyle=this.fs(cur.gerundIrr);out.curPartStyle=this.fs(cur.participleIrr);
+      const tb=(active,color)=>({padding:'7px 12px',borderRadius:'8px',cursor:'pointer',fontSize:'13px',fontWeight:600,border:'1.5px solid '+(active?color:'#E1DCD2'),background:active?color:'#fff',color:active?'#fff':'#5C574D'});
+      out.curStarStyle=tb(cf.star,'#D9930D');out.curBookStyle=tb(cf.book,'#2762BF');
+      out.curToggleStar=()=>this.toggle(cur.infinitive,'star');out.curToggleBook=()=>this.toggle(cur.infinitive,'book');
+      out.curExamples=cur.examples||[];
+      out.curGroups=this.buildGroups(cur);
+    }
+    const q=st.test;
+    out.hasQ=!!q;out.sessRight=st.sess.r;out.sessWrong=st.sess.w;out.dueCount=this.dueVerbs().length;
+    if(q){
+      const L={fill:'Escribe la conjugación',mc:'Elige la forma correcta',rev:'¿Qué forma es?',trans:'Traducción → verbo'};
+      out.qTypeLabel=L[q.type];
+      if(q.type==='trans'){out.qMain=q.tr;out.qSub='';out.qAsk='Escribe el infinitivo en español'}
+      if(q.type==='rev'){out.qMain=q.shownForm;out.qSub=q.inf+(hideTr?'':' — '+q.tr);out.qAsk='¿Qué tiempo y persona es?'}
+      if(q.type==='fill'||q.type==='mc'){out.qMain=q.inf;out.qSub=hideTr?'':q.tr;out.qAsk=q.tense+' · '+q.person}
+      out.qHasInput=(q.type==='fill'||q.type==='trans')&&!st.lastRes;
+      out.qHasOptions=(q.type==='mc'||q.type==='rev');
+      out.tInput=st.tInput;
+      out.onTInput=e=>this.setState({tInput:e.target.value});
+      out.onTKey=e=>{if(e.key==='Enter'){st.lastRes?this.nextQ():this.answer(st.tInput)}};
+      out.submitFill=()=>this.answer(st.tInput);
+      out.accents=['á','é','í','ó','ú','ñ'].map(ch=>({ch,add:()=>this.setState({tInput:st.tInput+ch})}));
+      out.testOptions=(q.options||[]).map(o=>{
+        let bg='#fff',bd='#E1DCD2',col='#1B1A17';
+        if(st.lastRes){if(o===q.answer){bg='#EAF3E6';bd='#5B8C4A';col='#2F5626'}else if(o===st.lastRes.given&&!st.lastRes.ok){bg='#FAE8E2';bd='#C86A4A';col='#8F3A22'}else{col='#B4AFA5'}}
+        return {label:o,pick:()=>this.answer(o),style:{padding:'12px 14px',borderRadius:'10px',cursor:'pointer',fontSize:'15px',fontFamily:MONO,fontWeight:500,textAlign:'left',background:bg,border:'1.5px solid '+bd,color:col}};
+      });
+      out.showFeedback=!!st.lastRes;
+      if(st.lastRes){
+        const r=st.lastRes;
+        out.fbStyle={marginTop:'14px',padding:'12px 14px',borderRadius:'10px',fontSize:'14px',background:r.ok?'#EAF3E6':'#FAE8E2',border:'1px solid '+(r.ok?'#9DBF8E':'#E0A28D'),color:r.ok?'#2F5626':'#8F3A22'};
+        out.fbTitle=r.ok?(r.soft?'Casi — ¡ojo con las tildes! →':'¡Correcto!'):'Incorrecto. Era:';
+        out.fbAnswer=q.answer;
+        out.fbNote=(!r.ok&&q.type!=='mc'&&q.type!=='rev')?('Escribiste: '+r.given):(r.soft?('Escribiste: '+r.given):'');
+      }
+      out.nextQ=()=>this.nextQ();
+    }
+    const ff=st.flash.filter,fl=this.state.flags;
+    out.flashFilters=[['all','Todos'],['star','★ Importantes'],['book','⚑ Repasar'],['irr','Irregulares']].map(([id,label])=>({label,go:()=>this.setState({flash:{i:0,flip:false,filter:id}}),style:this.chipStyle(ff===id)}));
+    const deck=V.filter(v=>{const f=fl[v.infinitive]||{};return ff==='all'||(ff==='star'&&f.star)||(ff==='book'&&f.book)||(ff==='irr'&&v.irregular)});
+    out.hasCard=deck.length>0;out.noCard=deck.length===0;
+    if(deck.length){
+      const i=st.flash.i%deck.length;const c=deck[i];
+      out.cardFront=c.infinitive;out.cardTr=c.translation;
+      out.flipped=st.flash.flip;out.notFlipped=!st.flash.flip;
+      out.cardRows=[{k:'presente (yo)',v:c.tenses.presente[0]},{k:'indefinido (yo)',v:c.tenses.preterito[0]},{k:'futuro (yo)',v:c.tenses.futuro[0]},{k:'gerundio',v:c.gerund},{k:'participio',v:c.participle}];
+      out.cardPos=(i+1)+' / '+deck.length;
+      out.flip=()=>this.setState({flash:Object.assign({},st.flash,{flip:!st.flash.flip})});
+      const next=()=>this.setState({flash:Object.assign({},st.flash,{i:(i+1)%deck.length,flip:false})});
+      out.cardKnow=next;
+      out.cardAgain=()=>{this.toggle(c.infinitive,'book');next()};
+    }
+    // ---- Vocabulario ----
+    const vd=st.vocab;
+    if(vd){
+      const VC=st.voc,vf=k=>st.vflags[k]||{};
+      const cats=Object.keys(vd.categories);
+      const chips=[['all','Todas'],['star','★ Importantes'],['book','⚑ Repasar']].map(([id,label])=>({label,go:()=>this.vSetCat(id),style:this.chipStyle(VC.cat===id)}));
+      const catChips=cats.map(c=>({label:c,go:()=>this.vSetCat(c),style:this.chipStyle(VC.cat===c)}));
+      out.vocChips=chips;out.vocCatChips=catChips;
+      const all=this.vAllWords();
+      const s=strip(VC.q);
+      const filtered=all.filter(w=>{
+        if(VC.cat==='star'&&!vf(w.es).star)return false;
+        if(VC.cat==='book'&&!vf(w.es).book)return false;
+        if(VC.cat!=='all'&&VC.cat!=='star'&&VC.cat!=='book'&&w.cat!==VC.cat)return false;
+        if(s&&!strip(w.es).includes(s)&&!strip(w.en).includes(s))return false;
+        return true;
+      });
+      out.vocQ=VC.q;out.onVocSearch=e=>this.setState({voc:Object.assign({},st.voc,{q:e.target.value})});
+      out.vocHideEn=VC.hideEn;
+      out.vocToggleHide=()=>this.setState({voc:Object.assign({},st.voc,{hideEn:!VC.hideEn,revealed:{}})});
+      out.vocToggleStyle={padding:'9px 14px',borderRadius:'10px',cursor:'pointer',fontSize:'13px',fontWeight:600,border:'1.5px solid '+(VC.hideEn?'var(--acc,#2B5FB5)':'#E1DCD2'),background:VC.hideEn?'var(--acc,#2B5FB5)':'#fff',color:VC.hideEn?'#fff':'#5C574D'};
+      out.vocCount=filtered.length;
+      out.vocStarCount=all.filter(w=>vf(w.es).star).length;
+      out.vocBookCount=all.filter(w=>vf(w.es).book).length;
+      out.vocTotal=all.length;out.vocCatN=cats.length;
+      out.vocStartPractice=()=>this.setState({voc:Object.assign({},st.voc,{practice:true,i:0,flip:false})});
+      out.vocPracticing=VC.practice&&filtered.length>0;
+      out.vocBrowsing=!VC.practice||filtered.length===0;
+      const rev=VC.revealed||{};
+      const doReveal=es=>{if(!VC.hideEn)return;const r=Object.assign({},this.state.voc.revealed);r[es]=!r[es];this.setState({voc:Object.assign({},this.state.voc,{revealed:r})})};
+      out.vocWords=filtered.map(w=>{const shown=!VC.hideEn||rev[w.es];return {
+        es:w.es,en:shown?w.en:'· · ·',g:w.g,hasG:!!w.g,
+        enStyle:{fontSize:'13.5px',color:shown?'#5C574D':'#C7C1B6',fontStyle:shown?'normal':'italic'},
+        cardStyle:{background:'#fff',border:'1px solid #E7E3DA',borderRadius:'10px',padding:'11px 13px',display:'flex',flexDirection:'column',gap:'4px',cursor:VC.hideEn?'pointer':'default'},
+        onCard:()=>doReveal(w.es),
+        starStyle:this.iconBtn(vf(w.es).star,'#D9930D'),bookStyle:this.iconBtn(vf(w.es).book,'#2762BF'),
+        toggleStar:e=>this.vToggle(w.es,'star',e),toggleBook:e=>this.vToggle(w.es,'book',e)
+      }});
+      // practice deck
+      if(filtered.length){
+        const i=VC.i%filtered.length,c=filtered[i];
+        out.vocCardEs=c.es;out.vocCardEn=c.en;out.vocCardG=c.g;out.vocCardHasG=!!c.g;out.vocCardCat=c.cat;
+        out.vocFlip=VC.flip;out.vocNoFlip=!VC.flip;
+        out.vocDoFlip=()=>this.setState({voc:Object.assign({},st.voc,{flip:!VC.flip})});
+        const vnext=()=>this.setState({voc:Object.assign({},st.voc,{i:(i+1)%filtered.length,flip:false})});
+        out.vocNext=vnext;
+        out.vocAgain=()=>{this.vToggle(c.es,'book');vnext()};
+        out.vocPos=(i+1)+' / '+filtered.length;
+        out.vocExit=()=>this.setState({voc:Object.assign({},st.voc,{practice:false})});
+        out.vocCardBook=vf(c.es).book;
+      }
+      out.vocEmpty=filtered.length===0;
+    }
+    const D=st.dict;
+    out.dictQ=D.q;out.dictLoading=D.loading;out.dictError=D.error;
+    const setDir=dir=>this.setState({dict:Object.assign({},this.state.dict,{dir,entry:null,error:''})});
+    out.dictDirs=[['es','Español → Inglés / Español'],['en','Inglés → Español']].map(([id,label])=>({label,go:()=>setDir(id),style:this.chipStyle(D.dir===id)}));
+    out.dictPlaceholder=D.dir==='en'?'Search any English word… (dog, happy, to run)':'Busca cualquier palabra… (perro, feliz, correr)';
+    out.dictTransLabel=D.dir==='en'?'traducción al español':'English';
+    out.onDictInput=e=>this.onDictType(e.target.value);
+    out.onDictKey=e=>{if(e.key==='Enter'){clearTimeout(this._suggT);this.lookup(this.state.dict.q)}else if(e.key==='Escape')this.setState({dict:Object.assign({},this.state.dict,{suggOpen:false})})};
+    out.dictSuggOpen=D.suggOpen&&D.sugg.length>0;
+    out.dictSugg=D.sugg.map(w=>({label:w,go:()=>this.lookup(w)}));
+    out.dictBlur=()=>{setTimeout(()=>{this.setState({dict:Object.assign({},this.state.dict,{suggOpen:false})})},150)};
+    out.dictSearch=()=>this.lookup(D.q);
+    out.dictRandom=()=>{const w=V[Math.floor(Math.random()*V.length)].infinitive;this.lookup(w)};
+    out.dictRecent=D.recent.map(w=>({label:w,go:()=>this.lookup(w),style:{padding:'5px 11px',borderRadius:'999px',border:'1px solid #E1DCD2',background:'#fff',color:'#5C574D',cursor:'pointer',fontSize:'12.5px',fontFamily:MONO}}));
+    out.dictHasRecent=D.recent.length>0;
+    const en=D.entry;
+    out.dictHasEntry=!!en&&en.found!==false;
+    out.dictNotFound=!!en&&en.found===false;
+    out.dictIdle=!en&&!D.loading&&!D.error;
+    if(en&&en.found===false){out.dictNfWord=en.headword;out.dictNfSug=en.suggestion?('¿Quisiste decir "'+en.suggestion+'"?'):'';out.dictNfHasSug=!!en.suggestion;out.dictNfSugGo=()=>en.suggestion&&this.lookup(en.suggestion)}
+    if(en&&en.found!==false){
+      out.dictWord=en.headword||D.word;
+      out.dictPron=en.pronunciation||'';
+      out.dictSyll=en.syllables||'';
+      out.dictHasSyll=!!en.syllables;
+      out.dictSenses=(en.senses||[]).map((s,i)=>({
+        num:i+1,pos:s.pos||'',gender:s.gender&&s.gender!=='null'?s.gender:'',
+        hasGender:!!(s.gender&&s.gender!=='null'),
+        english:(s.english||[]).join(', '),
+        spanish:s.spanish||'',
+        examples:(s.examples||[]).map(ex=>({es:ex.es,en:ex.en}))
+      }));
+      out.dictSyn=(en.synonyms||[]).join(' · ');
+      out.dictHasSyn=(en.synonyms||[]).length>0;
+      out.dictAnt=(en.antonyms||[]).join(' · ');
+      out.dictHasAnt=(en.antonyms||[]).length>0;
+      out.dictNote=en.note&&en.note!=='null'?en.note:'';
+      out.dictHasNote=!!(en.note&&en.note!=='null');
+      const isVerbInList=V.find(v=>v.infinitive===out.dictWord);
+      out.dictConjLink=isVerbInList?(()=>{this.openVerb(V.indexOf(isVerbInList))}):null;
+      out.dictHasConj=!!isVerbInList;
+    }
+    const gex=(...p)=>{const r=[];for(let i=0;i<p.length;i+=2)r.push({es:p[i],en:p[i+1]});return r};
+    out.cheatGrammar=[
+      {group:'Sustantivos y artículos',cards:[
+        {name:'Género del sustantivo',rule:'Casi siempre -o = masculino, -a = femenino. Muchas excepciones que hay que memorizar.',
+         points:['el libro, el perro (m)','la mesa, la casa (f)','excepciones: el día, el mapa, el problema (m) · la mano, la foto (f)'],
+         examples:gex('el coche rojo','the red car','la mesa pequeña','the small table')},
+        {name:'Plural',rule:'Vocal final → +s. Consonante final → +es. La -z se convierte en -ces.',
+         points:['libro → libros','ciudad → ciudades','lápiz → lápices'],
+         examples:gex('dos gatos','two cats','tres profesores','three teachers')},
+        {name:'Artículos',rule:'Definidos (the): el, la, los, las. Indefinidos (a/some): un, una, unos, unas. Concuerdan en género y número.',
+         points:['contracciones: a + el = al · de + el = del'],
+         examples:gex('Voy al parque.','I go to the park.','la casa de la abuela','the grandmother\u2019s house')}
+      ]},
+      {group:'Adjetivos y comparación',cards:[
+        {name:'Concordancia del adjetivo',rule:'El adjetivo concuerda en género y número y suele ir después del sustantivo.',
+         points:['-o → -a en femenino: alto/alta','otros no cambian género: grande, feliz','bueno → buen · grande → gran (antes del sustantivo)'],
+         examples:gex('unos coches rojos','some red cars','una chica alta','a tall girl')},
+        {name:'Comparativos',rule:'más / menos + adjetivo + que. Igualdad: tan + adjetivo + como.',
+         points:['irregulares: mejor, peor, mayor, menor','superlativo: el/la más …'],
+         examples:gex('Soy más alto que tú.','I am taller than you.','Ella es tan lista como él.','She is as smart as him.')},
+        {name:'Muy vs Mucho',rule:'muy + adjetivo/adverbio (invariable). mucho + sustantivo (concuerda) o después del verbo.',
+         points:['muy cansado · muy bien','mucho dinero · muchas casas'],
+         examples:gex('Estoy muy cansado.','I am very tired.','Tengo mucha hambre.','I am very hungry.')}
+      ]},
+      {group:'Pronombres y determinantes',cards:[
+        {name:'Pronombres personales',rule:'Sujeto: yo, tú, él/ella/usted, nosotros/as, vosotros/as, ellos/ellas/ustedes. Se omiten a menudo.',
+         points:['usted / ustedes = formal','vosotros = España · ustedes = Latinoamérica'],
+         examples:gex('(Yo) hablo español.','I speak Spanish.','¿(Tú) tienes tiempo?','Do you have time?')},
+        {name:'Posesivos',rule:'mi, tu, su, nuestro/a, vuestro/a, su. Concuerdan en número (nuestro también en género).',
+         points:['mi/tu/su → mis/tus/sus','nuestro coche · nuestra casa'],
+         examples:gex('Mi hermano y mis padres','My brother and my parents','Es su libro.','It is his/her book.')},
+        {name:'Demostrativos',rule:'Cercanía: este/esta (this), ese/esa (that), aquel/aquella (that over there).',
+         points:['plural: estos, esos, aquellos','neutro: esto, eso, aquello'],
+         examples:gex('Este café está bueno.','This coffee is good.','Esa casa es grande.','That house is big.')},
+        {name:'Pronombres de objeto',rule:'OD: me, te, lo/la, nos, os, los/las. OI: me, te, le, nos, os, les. Van antes del verbo.',
+         points:['le/les → se antes de lo/la','se colocan tras el infinitivo/gerundio: quiero verlo'],
+         examples:gex('Lo veo.','I see it/him.','Te lo doy.','I give it to you.')}
+      ]},
+      {group:'Verbos clave y estructuras',cards:[
+        {name:'Ser vs Estar (to be)',rule:'SER = identidad, origen, profesión, hora, características permanentes. ESTAR = estado, ubicación, sentimientos.',
+         points:['ser: Soy médico · Es lunes · Es alta','estar: Estoy en casa · Estoy cansado'],
+         examples:gex('Soy de México.','I am from Mexico.','Estoy en el trabajo.','I am at work.')},
+        {name:'Hay (there is / are)',rule:'Forma impersonal de haber. Invariable: se usa para singular y plural. Con cantidades, no con artículo definido.',
+         points:['Hay un problema · Hay muchos coches','pasado: había'],
+         examples:gex('Hay leche en la nevera.','There is milk in the fridge.','¿Cuántas personas hay?','How many people are there?')},
+        {name:'Expresiones con tener',rule:'Muchos estados usan tener + sustantivo (en inglés se usa "to be").',
+         points:['tener hambre / sed / sueño / prisa','tener frío / calor / miedo / razón','tener … años (edad)','tener que + infinitivo = have to'],
+         examples:gex('Tengo veinte años.','I am twenty.','Tengo que estudiar.','I have to study.')},
+        {name:'Gustar (to like)',rule:'Estructura invertida: (a mí) me gusta + singular/infinitivo · me gustan + plural. Lo que gusta es el sujeto.',
+         points:['me, te, le, nos, os, les','similares: encantar, interesar, doler'],
+         examples:gex('Me gusta el café.','I like coffee.','Me gustan los perros.','I like dogs.')},
+        {name:'Futuro con ir a',rule:'ir (voy, vas, va…) + a + infinitivo. El futuro más usado al hablar.',
+         examples:gex('Voy a comer.','I am going to eat.','Vamos a viajar.','We are going to travel.')},
+        {name:'Presente continuo',rule:'estar + gerundio (-ando / -iendo). Para acciones en curso ahora mismo.',
+         examples:gex('Estoy trabajando.','I am working.','Están comiendo.','They are eating.')},
+        {name:'Verbos reflexivos',rule:'El pronombre reflexivo (me, te, se, nos, os, se) concuerda con el sujeto.',
+         points:['llamarse, levantarse, ducharse, acostarse'],
+         examples:gex('Me llamo Ana.','My name is Ana.','Se levanta temprano.','He gets up early.')}
+      ]},
+      {group:'Preguntas, negación y tiempo',cards:[
+        {name:'Interrogativos',rule:'Siempre con tilde. ¿? al principio y al final.',
+         points:['qué (what) · quién (who) · cómo (how)','dónde (where) · cuándo (when) · por qué (why)','cuánto/a/os/as (how much/many) · cuál (which)'],
+         examples:gex('¿Dónde vives?','Where do you live?','¿Cuántos años tienes?','How old are you?')},
+        {name:'Negación',rule:'no va antes del verbo. Doble negación es normal en español.',
+         points:['nada, nadie, nunca, tampoco, ningún'],
+         examples:gex('No hablo francés.','I don\u2019t speak French.','No viene nadie.','Nobody is coming.')},
+        {name:'La hora',rule:'Es la una (1:00). Son las + número (resto). y (past) / menos (to) / y media / y cuarto.',
+         points:['de la mañana / tarde / noche'],
+         examples:gex('Son las tres y media.','It is half past three.','Es la una y cuarto.','It is quarter past one.')},
+        {name:'Preposiciones básicas',rule:'a (to/at), de (of/from), en (in/on/at), con (with), por/para (for).',
+         points:['por = causa/duración · para = destino/propósito'],
+         examples:gex('Voy a Madrid en tren.','I go to Madrid by train.','Es un regalo para ti.','It is a gift for you.')}
+      ]},
+      {group:'Frases de uso diario',cards:[
+        {name:'Saludos y cortesía',rule:'Fórmulas fijas para el día a día. ¿Qué tal? / ¿Cómo estás? para preguntar cómo va todo.',
+         points:['hola · buenos días · buenas tardes · buenas noches','gracias → de nada','perdón / disculpe · con permiso · lo siento'],
+         examples:gex('¿Qué tal? — Bien, ¿y tú?','How\u2019s it going? — Good, and you?','Disculpe, ¿dónde está el baño?','Excuse me, where is the bathroom?')},
+        {name:'En la tienda y el restaurante',rule:'Para comprar y pedir. quisiera / me gustaría son más educados que quiero.',
+         points:['¿Cuánto cuesta? · ¿Cuánto es?','la cuenta, por favor','para llevar / para tomar aquí'],
+         examples:gex('Quisiera un café, por favor.','I would like a coffee, please.','¿Cuánto cuesta esto?','How much is this?')},
+        {name:'Comunicarse en clase',rule:'Frases para cuando no entiendes o necesitas ayuda.',
+         points:['no entiendo · ¿puede repetir?','más despacio, por favor','¿cómo se dice … en español?','¿qué significa …?'],
+         examples:gex('¿Cómo se dice "book" en español?','How do you say "book" in Spanish?','No entiendo, más despacio.','I don\u2019t understand, slower.')},
+        {name:'El tiempo (clima)',rule:'Se usa hacer para la sensación general, estar para el estado del cielo, y verbos propios para lluvia/nieve.',
+         points:['hace sol / calor / frío / viento','está nublado · está despejado','llueve (llover) · nieva (nevar)'],
+         examples:gex('Hoy hace mucho calor.','Today it is very hot.','Está lloviendo.','It is raining.')},
+        {name:'Días y fechas',rule:'Días en minúscula. "el lunes" = this Monday · "los lunes" = on Mondays. Fecha: el + número + de + mes.',
+         points:['de + mes + de + año','el primero (1º) o el uno de mayo'],
+         examples:gex('Tengo clase los martes.','I have class on Tuesdays.','Es el 5 de mayo de 2024.','It is May 5th, 2024.')}
+      ]},
+      {group:'Más verbos y conectores',cards:[
+        {name:'Verbos con cambio de raíz',rule:'En presente la vocal de la raíz cambia en todas las personas menos nosotros/vosotros.',
+         points:['e → ie: querer → quiero · pensar → pienso','o → ue: poder → puedo · dormir → duermo','e → i: pedir → pido · servir → sirvo'],
+         examples:gex('Quiero dormir.','I want to sleep.','¿Puedes venir?','Can you come?')},
+        {name:'Yo irregular en presente',rule:'Muchos verbos comunes solo cambian en la primera persona (yo).',
+         points:['-go: tengo, hago, pongo, salgo, digo, vengo','-zco: conozco, conduzco','otros: sé (saber), doy (dar), veo (ver)'],
+         examples:gex('Hago la cena y pongo la mesa.','I make dinner and set the table.','Salgo a las ocho.','I leave at eight.')},
+        {name:'Saber vs Conocer',rule:'saber = saber información o saber hacer algo. conocer = estar familiarizado con personas o lugares.',
+         points:['saber + infinitivo = to know how to','conocer a + persona'],
+         examples:gex('Sé nadar.','I know how to swim.','Conozco a María.','I know María.')},
+        {name:'acabar de · hay que · tener que',rule:'Perífrasis muy útiles con infinitivo.',
+         points:['acabar de + inf = to have just','hay que + inf = one must (general)','tener que + inf = to have to (personal)'],
+         examples:gex('Acabo de comer.','I have just eaten.','Hay que estudiar mucho.','One must study a lot.')},
+        {name:'Conectores',rule:'Unen ideas. y → e antes de i-/hi-. o → u antes de o-/ho-.',
+         points:['y, pero, porque, también, tampoco','por eso, entonces, además','padre e hijo · siete u ocho'],
+         examples:gex('Estudio porque quiero aprender.','I study because I want to learn.','No como carne, y tampoco pescado.','I don\u2019t eat meat, nor fish either.')},
+        {name:'Adverbios de frecuencia',rule:'Indican cada cuánto pasa algo. Suelen ir antes o después del verbo.',
+         points:['siempre · casi siempre · a menudo','a veces · casi nunca · nunca','todos los días · una vez por semana'],
+         examples:gex('Siempre desayuno café.','I always have coffee for breakfast.','A veces voy al cine.','Sometimes I go to the cinema.')}
+      ]},
+      {group:'Verbos reflexivos',cards:[
+        {name:'¿Qué son?',rule:'La acción recae sobre el propio sujeto. El infinitivo termina en -se (levantarse). Requieren un pronombre reflexivo que concuerda con el sujeto.',
+         points:['me, te, se, nos, os, se','levantarse: me levanto, te levantas, se levanta…','sin pronombre cambia el significado: levantar (algo) ≠ levantarse'],
+         examples:gex('Me levanto a las siete.','I get up at seven.','Ellos se lavan las manos.','They wash their hands.')},
+        {name:'Colocación del pronombre',rule:'Va antes del verbo conjugado. Con infinitivo o gerundio, se une al final o va antes del verbo auxiliar.',
+         points:['antes: me ducho · no me ducho','unido: voy a ducharme = me voy a duchar','gerundio: estoy duchándome = me estoy duchando'],
+         examples:gex('Tengo que acostarme.','I have to go to bed.','Se está peinando.','She is combing her hair.')},
+        {name:'La rutina diaria',rule:'La mayoría de acciones de la rutina son reflexivas. Muy útiles para hablar de tu día.',
+         points:['despertarse (o→ie) · levantarse','ducharse · vestirse (e→i) · peinarse','acostarse (o→ue) · dormirse (o→ue)'],
+         examples:gex('Me despierto, me ducho y me visto.','I wake up, shower and get dressed.','Me acuesto tarde.','I go to bed late.')},
+        {name:'Otros usos frecuentes',rule:'Muchos verbos comunes son reflexivos aunque no describan rutina, o cambian de matiz.',
+         points:['llamarse (to be called) · sentirse (to feel)','irse (to leave/go away) · quedarse (to stay)','ponerse (to put on) · aburrirse, divertirse'],
+         examples:gex('Me llamo Ana y me siento bien.','My name is Ana and I feel good.','Me voy, ¡hasta luego!','I\u2019m leaving, see you!')},
+        {name:'Recíprocos (each other)',rule:'En plural, el reflexivo puede indicar acción mutua entre dos o más personas.',
+         points:['nos, os, se + verbo en plural'],
+         examples:gex('Nos vemos mañana.','We see each other tomorrow.','Se quieren mucho.','They love each other a lot.')}
+      ]},
+      {group:'Objeto directo e indirecto',cards:[
+        {name:'Objeto directo (OD)',rule:'Recibe la acción directamente (¿qué? / ¿a quién?). Sustituye a la cosa o persona para no repetirla.',
+         points:['me, te, lo/la, nos, os, los/las','cosas y personas: lo (m), la (f)','persona como OD lleva "a": Veo a Juan → Lo veo'],
+         examples:gex('¿Compras el pan? — Sí, lo compro.','Do you buy the bread? — Yes, I buy it.','Te veo mañana.','I\u2019ll see you tomorrow.')},
+        {name:'Objeto indirecto (OI)',rule:'Indica a quién o para quién (¿a quién? / ¿para quién?). Suele ser el destinatario.',
+         points:['me, te, le, nos, os, les','se repite aunque se nombre: Le doy el libro a Ana','le/les son iguales para m y f'],
+         examples:gex('Le escribo a mi madre.','I write to my mother.','¿Me das agua, por favor?','Will you give me water, please?')},
+        {name:'Los dos juntos (OI + OD)',rule:'El orden es siempre OI antes de OD, y ambos antes del verbo.',
+         points:['orden: (OI) + (OD) + verbo','le / les → se cuando va antes de lo/la/los/las','"Le doy el libro" → "Se lo doy"'],
+         examples:gex('¿El regalo? Te lo doy.','The gift? I give it to you.','Se lo digo a ellos.','I say it to them.')},
+        {name:'Colocación',rule:'Antes del verbo conjugado. Con infinitivo o gerundio se pueden unir al final; con el imperativo afirmativo van siempre pegados.',
+         points:['no lo quiero · quiero comprarlo = lo quiero comprar','estoy leyéndolo = lo estoy leyendo','¡Dámelo! · ¡Cómpralos!'],
+         examples:gex('¿Puedes ayudarme? = ¿Me puedes ayudar?','Can you help me?','Dímelo, por favor.','Tell it to me, please.')}
+      ]}
+    ];
+    const _cp=st.cheatPage||1;
+    const _order1=['Sustantivos y artículos','Adjetivos y comparación','Pronombres y determinantes','Objeto directo e indirecto','Verbos reflexivos'];
+    const _order2=['Verbos clave y estructuras','Preguntas, negación y tiempo','Frases de uso diario','Más verbos y conectores'];
+    const _byName={};out.cheatGrammar.forEach(g=>_byName[g.group]=g);
+    out.cheatGrammar=(_cp===1?_order1:_order2).map(n=>_byName[n]).filter(Boolean);
+    out.cheatPage=_cp;out.cheatP2=_cp===2;
+    out.cheatPageTabs=[[1,'Parte 1 · Nombres y pronombres'],[2,'Parte 2 · Verbos y conjugación']].map(([id,label])=>({label,go:()=>{this.setState({cheatPage:id});window.scrollTo(0,0)},style:this.chipStyle(_cp===id)}));
+    out.cheatTables=[
+      {name:'Presente',ar:'-o -as -a -amos -áis -an',er:'-o -es -e -emos -éis -en',ir:'-o -es -e -imos -ís -en'},
+      {name:'Pretérito indefinido',ar:'-é -aste -ó -amos -asteis -aron',er:'-í -iste -ió -imos -isteis -ieron',ir:'(igual que -er)'},
+      {name:'Imperfecto',ar:'-aba -abas -aba -ábamos -abais -aban',er:'-ía -ías -ía -íamos -íais -ían',ir:'(igual que -er)'},
+      {name:'Futuro (infinitivo +)',ar:'-é -ás -á -emos -éis -án',er:'(igual)',ir:'(igual)'},
+      {name:'Condicional (infinitivo +)',ar:'-ía -ías -ía -íamos -íais -ían',er:'(igual)',ir:'(igual)'},
+      {name:'Subjuntivo presente',ar:'-e -es -e -emos -éis -en',er:'-a -as -a -amos -áis -an',ir:'(igual que -er)'}
+    ];
+    out.cheatRules=[
+      {name:'Pretérito perfecto',rule:'he / has / ha / hemos / habéis / han + participio',ex:'he hablado — I have spoken'},
+      {name:'Pluscuamperfecto',rule:'había / habías / … + participio',ex:'había comido — I had eaten'},
+      {name:'Futuro perfecto',rule:'habré / habrás / … + participio',ex:'habré terminado — I will have finished'},
+      {name:'Condicional perfecto',rule:'habría / habrías / … + participio',ex:'habría ido — I would have gone'},
+      {name:'Presente continuo',rule:'estoy / estás / … + gerundio',ex:'estoy trabajando — I am working'},
+      {name:'Futuro informal',rule:'voy / vas / va / … + a + infinitivo',ex:'voy a salir — I am going to leave'},
+      {name:'Gerundio',rule:'-ar → -ando · -er / -ir → -iendo',ex:'hablando · comiendo · viviendo'},
+      {name:'Participio',rule:'-ar → -ado · -er / -ir → -ido',ex:'hablado · comido · vivido'},
+      {name:'Imperativo negativo',rule:'no + subjuntivo presente',ex:'¡no hables! — don\u2019t speak!'},
+      {name:'Imperativos tú irregulares',rule:'di · haz · ve · pon · sal · sé · ten · ven',ex:'decir · hacer · ir · poner · salir · ser · tener · venir'}
+    ];
+    return out;
+  }
+  nextQ(){this.genQ()}
+}
+</script>
+</body>
+</html>
