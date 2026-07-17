@@ -88,6 +88,22 @@ button{font-family:inherit}input{font-family:inherit}
    <div style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:12px;font-weight:800;color:var(--acc,#B54A2B)">Buscar →</div>
    <div style="position:absolute;left:0;bottom:0;height:5px;width:100%;background:#2B5FB5"></div>
   </div>
+  <div onClick="{{goTranslate}}" style="position:relative;overflow:hidden;background:#fff;border:2px solid #1B1A17;border-radius:18px;padding:16px 16px 14px;cursor:pointer;box-shadow:0 4px 0 #1B1A17;transition:transform .1s,box-shadow .1s" style-hover="transform:translateY(-2px);box-shadow:0 6px 0 #1B1A17">
+   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+    <div style="flex:1"><div style="font-weight:800;font-size:17px;letter-spacing:-.01em">Traductor</div><div style="font-size:12.5px;color:#8A857B;margin-top:2px;font-weight:500;text-wrap:pretty">Traduce y mejora frases · فارسی · EN · ES</div></div>
+    <img src="assets/pet/laptop.png" alt="" style="height:60px;width:auto;flex-shrink:0;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.12))"></img>
+   </div>
+   <div style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:12px;font-weight:800;color:var(--acc,#B54A2B)">Traducir →</div>
+   <div style="position:absolute;left:0;bottom:0;height:5px;width:100%;background:#00BCD4"></div>
+  </div>
+  <div onClick="{{goConv}}" style="position:relative;overflow:hidden;background:#fff;border:2px solid #1B1A17;border-radius:18px;padding:16px 16px 14px;cursor:pointer;box-shadow:0 4px 0 #1B1A17;transition:transform .1s,box-shadow .1s" style-hover="transform:translateY(-2px);box-shadow:0 6px 0 #1B1A17">
+   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+    <div style="flex:1"><div style="font-weight:800;font-size:17px;letter-spacing:-.01em">Conversar</div><div style="font-size:12.5px;color:#8A857B;margin-top:2px;font-weight:500;text-wrap:pretty">Traductor de voz cara a cara, tipo walkie-talkie</div></div>
+    <img src="assets/pet/wave.png" alt="" style="height:60px;width:auto;flex-shrink:0;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.12))"></img>
+   </div>
+   <div style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:12px;font-weight:800;color:var(--acc,#B54A2B)">🎤 Empezar a hablar →</div>
+   <div style="position:absolute;left:0;bottom:0;height:5px;width:100%;background:#E91E63"></div>
+  </div>
   <div onClick="{{goTest}}" style="position:relative;overflow:hidden;background:#fff;border:2px solid #1B1A17;border-radius:18px;padding:16px 16px 14px;cursor:pointer;box-shadow:0 4px 0 #1B1A17;transition:transform .1s,box-shadow .1s" style-hover="transform:translateY(-2px);box-shadow:0 6px 0 #1B1A17">
    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
     <div style="flex:1"><div style="font-weight:800;font-size:17px;letter-spacing:-.01em">Test</div><div style="font-size:12.5px;color:#8A857B;margin-top:2px;font-weight:500;text-wrap:pretty">Ponte a prueba en 4 modos con repaso</div></div>
@@ -377,6 +393,145 @@ button{font-family:inherit}input{font-family:inherit}
 </main>
 </sc-if>
 
+<sc-if value="{{isTranslate}}" hint-placeholder-val="{{false}}">
+<main style="max-width:760px;margin:0 auto;padding:20px 16px 70px;animation:fadein .25s ease">
+ <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+  <img src="assets/pet/laptop.png" alt="" style="height:52px;width:auto;flex-shrink:0"></img>
+  <div>
+   <h1 style="margin:0;font-size:22px;letter-spacing:-.01em">Traductor</h1>
+   <div style="font-size:13px;color:#8A857B;font-weight:500">Traduce frases y párrafos, o mejora lo que escribes para enviarlo.</div>
+  </div>
+ </div>
+
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+  <button onClick="{{setModeTranslate}}" style="{{trModeTranslate}}">🌐 Traducir</button>
+  <button onClick="{{setModeRevise}}" style="{{trModeRevise}}">✨ Revisar y mejorar</button>
+  <button onClick="{{trToggleBig}}" style="{{trBigStyle}}" title="Agrandar texto">A+ Texto grande</button>
+ </div>
+
+ <sc-if value="{{trIsTranslate}}" hint-placeholder-val="{{true}}">
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+   <sc-for list="{{trDirs}}" as="d" hint-placeholder-count="4">
+    <button onClick="{{d.go}}" style="{{d.style}}">{{d.label}}</button>
+   </sc-for>
+  </div>
+ </sc-if>
+ <sc-if value="{{trIsRevise}}" hint-placeholder-val="{{false}}">
+  <div style="background:#FFF7E0;border:2px solid #1B1A17;border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:13px;color:#3A3524;font-weight:500;text-wrap:pretty">Escribe tu mensaje (en inglés, español o persa, aunque tenga errores). Te devuelvo una versión pulida en <b>inglés</b> y la versión en <b>español</b> lista para enviar.</div>
+ </sc-if>
+
+ <textarea value="{{trInput}}" onChange="{{onTrInput}}" dir="{{trInputDir}}" placeholder="Escribe aquí tu texto…" style="width:100%;min-height:130px;padding:14px;border:2px solid #1B1A17;border-radius:14px;font-size:16px;font-family:inherit;background:#fff;resize:vertical;outline-color:var(--acc,#B54A2B);box-shadow:0 3px 0 #1B1A17"></textarea>
+
+ <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+  <button onClick="{{trRun}}" style="padding:12px 22px;border-radius:12px;border:2px solid #1B1A17;background:#1B1A17;color:#FFD21A;cursor:pointer;font-weight:800;font-size:15px;box-shadow:0 3px 0 rgba(0,0,0,.25)">{{trRunLabel}} →</button>
+  <button onClick="{{trClear}}" style="padding:12px 18px;border-radius:12px;border:2px solid #1B1A17;background:#fff;color:#1B1A17;cursor:pointer;font-weight:700;font-size:14px">Borrar</button>
+ </div>
+
+ <sc-if value="{{trLoading}}" hint-placeholder-val="{{false}}">
+  <div style="margin-top:16px;background:#fff;border:2px solid #1B1A17;border-radius:14px;padding:22px;text-align:center;color:#8A857B;font-size:14px;font-weight:600;box-shadow:0 4px 0 #1B1A17">Marsupilami está pensando… 🐾</div>
+ </sc-if>
+ <sc-if value="{{trError}}" hint-placeholder-val="{{false}}">
+  <div style="margin-top:16px;background:#FAE8E2;border:2px solid #C86A4A;border-radius:14px;padding:14px 16px;color:#8F3A22;font-size:14px;font-weight:600;text-wrap:pretty">{{trError}}</div>
+ </sc-if>
+
+ <sc-if value="{{trHasOut}}" hint-placeholder-val="{{false}}">
+  <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;animation:fadein .2s ease">
+   <sc-for list="{{trCards}}" as="c" hint-placeholder-count="2">
+    <div style="position:relative;overflow:hidden;background:#fff;border:2px solid #1B1A17;border-radius:16px;padding:14px 16px 16px;box-shadow:0 4px 0 #1B1A17">
+     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+      <span style="font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#8A857B">{{c.label}}</span>
+      <button onClick="{{c.copy}}" style="padding:5px 11px;border-radius:8px;border:1.5px solid #E1DCD2;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#5C574D">Copiar</button>
+     </div>
+     <div style="{{c.style}}">{{c.text}}</div>
+     <div style="position:absolute;left:0;bottom:0;height:5px;width:100%;background:{{c.bar}}"></div>
+    </div>
+   </sc-for>
+   <sc-if value="{{trHasNote}}" hint-placeholder-val="{{false}}">
+    <div style="background:#F7F4EC;border:2px solid #1B1A17;border-radius:14px;padding:12px 15px;font-size:13.5px;color:#3A3524;font-weight:500;text-wrap:pretty;box-shadow:0 3px 0 #1B1A17">💡 {{trNote}}</div>
+   </sc-if>
+  </div>
+ </sc-if>
+</main>
+</sc-if>
+
+<sc-if value="{{isConv}}" hint-placeholder-val="{{false}}">
+<main style="max-width:760px;margin:0 auto;padding:16px 16px 40px;animation:fadein .25s ease">
+ <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+  <img src="assets/pet/wave.png" alt="" style="height:52px;width:auto;flex-shrink:0"></img>
+  <div style="flex:1">
+   <h1 style="margin:0;font-size:22px;letter-spacing:-.01em">Traductor de conversación</h1>
+   <div style="font-size:13px;color:#8A857B;font-weight:500;text-wrap:pretty">Como un walkie-talkie: cada persona pulsa su botón, habla, y Marsu traduce en voz alta para la otra.</div>
+  </div>
+ </div>
+
+ <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+  <span style="font-size:11.5px;color:#8A857B;font-weight:800;text-transform:uppercase;letter-spacing:.04em">Motor de voz:</span>
+  <button onClick="{{convSetEngGemini}}" style="{{convEngGemini}}">🎯 Preciso</button>
+  <button onClick="{{convSetEngBrowser}}" style="{{convEngBrowser}}">⚡ Rápido</button>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+  <span style="font-size:11.5px;color:#8A857B;font-weight:800;text-transform:uppercase;letter-spacing:.04em">Modelo IA:</span>
+  <button onClick="{{convSetModelLite}}" style="{{convModelLite}}">⚡ Flash-Lite</button>
+  <button onClick="{{convSetModelPro}}" style="{{convModelPro}}">🎯 Flash</button>
+ </div>
+ <div style="font-size:12px;color:#8A857B;font-weight:500;margin-bottom:10px;text-wrap:pretty">{{convEngHint}}</div>
+
+ <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+  <button onClick="{{convToggleSpeak}}" style="{{convSpeakStyle}}" title="Leer traducción en voz alta">🔊 Voz</button>
+  <button onClick="{{convToggleBig}}" style="{{convBigStyle}}">A+ Grande</button>
+  <button onClick="{{convClear}}" style="padding:9px 13px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;border:2px solid #1B1A17;background:#fff;color:#1B1A17">🗑 Borrar</button>
+ </div>
+
+ <div style="background:#FBFAF7;border:2px solid #1B1A17;border-radius:16px;padding:14px;min-height:230px;box-shadow:0 4px 0 #1B1A17;display:flex;flex-direction:column;gap:10px">
+  <sc-if value="{{convEmpty}}" hint-placeholder-val="{{true}}">
+   <div style="text-align:center;color:#8A857B;padding:30px 16px">
+    <img src="assets/pet/idle.png" alt="" style="height:74px;width:auto;margin-bottom:8px"></img>
+    <div style="font-size:15px;font-weight:700;color:#5C574D">Traducción cara a cara</div>
+    <div style="font-size:13px;margin-top:4px;max-width:430px;margin-left:auto;margin-right:auto;text-wrap:pretty">Cada uno pulsa su botón de abajo y habla en su idioma. La traducción aparece aquí y se lee en voz alta para la otra persona.</div>
+   </div>
+  </sc-if>
+  <sc-for list="{{convMsgs}}" as="m" hint-placeholder-count="0">
+   <div style="{{m.rowStyle}}">
+    <div style="{{m.bubbleStyle}}">
+     <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span style="font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#8A857B">{{m.srcLabel}}</span></div>
+     <div style="{{m.srcStyle}}">{{m.srcText}}</div>
+     <sc-if value="{{m.pending}}" hint-placeholder-val="{{false}}">
+      <div style="font-size:13px;color:#8A857B;margin-top:6px;font-weight:600">Traduciendo… 🐾</div>
+     </sc-if>
+     <div style="display:flex;align-items:flex-start;gap:8px;margin-top:2px">
+      <div style="flex:1"><div style="font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--acc,#B54A2B);margin-top:6px">{{m.tgtLabel}}</div><div style="{{m.tgtStyle}}">{{m.tgtText}}</div></div>
+      <button onClick="{{m.replay}}" title="Escuchar" style="flex-shrink:0;align-self:flex-end;width:34px;height:34px;border-radius:9px;border:1.5px solid #E1DCD2;background:#fff;cursor:pointer;font-size:15px">🔊</button>
+     </div>
+    </div>
+   </div>
+  </sc-for>
+  <sc-if value="{{convHasInterim}}" hint-placeholder-val="{{false}}">
+   <div style="display:flex;justify-content:center"><div style="background:#EDEBE5;color:#8A857B;border-radius:14px;padding:9px 15px;font-size:15px;font-style:italic">{{convInterim}}…</div></div>
+  </sc-if>
+  <sc-if value="{{convLoading}}" hint-placeholder-val="{{false}}">
+   <div style="display:flex;justify-content:center"><div style="background:#fff;border:2px solid #1B1A17;border-radius:14px;padding:9px 15px;font-size:14px;color:#8A857B;font-weight:700">Marsu traduce… 🐾</div></div>
+  </sc-if>
+ </div>
+
+ <sc-if value="{{convError}}" hint-placeholder-val="{{false}}">
+  <div style="margin-top:10px;background:#FAE8E2;border:2px solid #C86A4A;border-radius:12px;padding:11px 14px;color:#8F3A22;font-size:13.5px;font-weight:600;text-wrap:pretty">{{convError}}</div>
+ </sc-if>
+
+ <div style="position:sticky;bottom:0;background:linear-gradient(180deg,rgba(250,249,246,0),#FAF9F6 28%);padding-top:14px;margin-top:14px">
+  <div style="display:flex;gap:10px;align-items:stretch">
+   <div style="flex:1;display:flex;flex-direction:column;gap:6px;align-items:center">
+    <button onClick="{{convCycleA}}" style="padding:4px 10px;border-radius:999px;border:1.5px solid #E1DCD2;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#5C574D">{{convALabel}} ⇄</button>
+    <button onClick="{{convTalkA}}" style="{{convBtnAStyle}}">{{convBtnALabel}}</button>
+   </div>
+   <div style="flex:1;display:flex;flex-direction:column;gap:6px;align-items:center">
+    <button onClick="{{convCycleB}}" style="padding:4px 10px;border-radius:999px;border:1.5px solid #E1DCD2;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#5C574D">{{convBLabel}} ⇄</button>
+    <button onClick="{{convTalkB}}" style="{{convBtnBStyle}}">{{convBtnBLabel}}</button>
+   </div>
+  </div>
+ </div>
+</main>
+</sc-if>
+
 <sc-if value="{{isDict}}" hint-placeholder-val="{{false}}">
 <main style="max-width:720px;margin:0 auto;padding:20px 16px 70px;animation:fadein .25s ease">
  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
@@ -393,6 +548,15 @@ button{font-family:inherit}input{font-family:inherit}
     <input value="{{dictKeyDraft}}" onChange="{{onKeyDraft}}" type="password" autoComplete="off" placeholder="AIza…" style="flex:1;min-width:200px;padding:10px 13px;border:1.5px solid #E1DCD2;border-radius:10px;font-size:14px;font-family:'IBM Plex Mono',monospace;background:#FDFCFA;outline-color:var(--acc,#2B5FB5)"></input>
     <button onClick="{{saveKey}}" style="padding:10px 16px;border-radius:10px;border:none;background:var(--acc,#2B5FB5);color:#fff;cursor:pointer;font-weight:600;font-size:14px">Guardar</button>
     <button onClick="{{clearKey}}" style="padding:10px 14px;border-radius:10px;border:1.5px solid #E1DCD2;background:#fff;cursor:pointer;font-size:13px;color:#8F3A22">Borrar</button>
+   </div>
+   <div style="margin-top:14px;border-top:1px solid #F0EDE6;padding-top:12px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:2px">Modelo de IA</div>
+    <div style="font-size:12.5px;color:#8A857B;margin-bottom:8px;text-wrap:pretty">Se usa en todo: diccionario, traductor y conversación.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+     <button onClick="{{setModelLite}}" style="{{modelLiteStyle}}">⚡ Flash-Lite · rápido</button>
+     <button onClick="{{setModelPro}}" style="{{modelProStyle}}">🎯 Flash · más potente</button>
+    </div>
+    <div style="font-size:12px;color:#8A857B;margin-top:8px;text-wrap:pretty">{{modelHint}}</div>
    </div>
   </div>
  </sc-if>
@@ -588,9 +752,13 @@ class Component extends DCLogic {
     test:null,tInput:'',lastRes:null,sess:{r:0,w:0},
     flash:{i:0,flip:false,filter:'all'},
     dict:{q:'',entry:null,loading:false,error:'',word:'',recent:[],dir:'es',sugg:[],suggOpen:false},
-    vocab:null,vflags:{},voc:{cat:'all',q:'',hideEn:false,practice:false,i:0,flip:false,revealed:{}}};
+    vocab:null,vflags:{},voc:{cat:'all',q:'',hideEn:false,practice:false,i:0,flip:false,revealed:{}},
+    tr:{mode:'translate',dir:'en2es',input:'',out:null,loading:false,error:'',big:false},
+    conv:{msgs:[],listening:false,recording:false,activeSide:null,input:'',loading:false,error:'',sideALang:'en-US',sideBLang:'es-ES',speak:true,big:false,interim:'',engine:'gemini'}};
   _sc={};
   componentDidMount(){
+    try{if(window.speechSynthesis){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{}}}catch(e){}
+    this.loadConv();
     fetch('data/verbs.json').then(r=>r.json()).then(d=>{
       let flags={},stats=this.state.stats;
       try{flags=JSON.parse(localStorage.getItem('svt_flags'))||{}}catch(e){}
@@ -650,12 +818,14 @@ class Component extends DCLogic {
   }
   dictCache(){try{return JSON.parse(localStorage.getItem('svt_dict'))||{}}catch(e){return {}}}
   geminiKey(){try{return localStorage.getItem('svt_gemini_key')||''}catch(e){return ''}}
+  geminiModel(task){try{return localStorage.getItem('svt_model_'+task)||localStorage.getItem('svt_model')||'gemini-flash-lite-latest'}catch(e){return 'gemini-flash-lite-latest'}}
+  saveModel(task,v){try{localStorage.setItem('svt_model_'+task,v)}catch(e){}this.forceUpdate()}
   hasClaude(){return typeof window!=='undefined'&&window.claude&&typeof window.claude.complete==='function'}
   // Unified text completion: prefer Gemini key if set, else in-editor Claude helper.
-  async askAI(prompt,maxTokens){
+  async askAI(prompt,maxTokens,task){
     const key=this.geminiKey();
     if(key){
-      const model='gemini-flash-lite-latest';
+      const model=this.geminiModel(task||'dict');
       const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
       const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:maxTokens||1500,temperature:0.2,thinkingConfig:{thinkingBudget:0}}})});
@@ -696,7 +866,7 @@ class Component extends DCLogic {
       ? 'Return ONLY a JSON array (no markdown) of up to 8 common English words that begin with "'+p+'", most frequent first, lowercase, no duplicates. Example: ["run","running","runner"]. If none, return [].'
       : 'Devuelve SOLO un array JSON (sin markdown) de hasta 8 palabras españolas comunes que empiecen con "'+p+'", las más frecuentes primero, en minúscula, sin duplicados. Ejemplo: ["correr","corrección","correcto"]. Si no hay, devuelve [].';
     try{
-      const txt=await this.askAI(prompt,200);
+      const txt=await this.askAI(prompt,200,'dict');
       let s=txt.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
       const a=s.indexOf('['),b=s.lastIndexOf(']');if(a>=0)s=s.slice(a,b+1);
       let arr=JSON.parse(s);if(!Array.isArray(arr))arr=[];
@@ -727,7 +897,7 @@ class Component extends DCLogic {
       'The "english" array must hold the SPANISH translations (that is what the user needs). Include all common senses (max 4), each with at least 1 real example. If the English word is misspelled, return {"found":false,"headword":"'+word+'","suggestion":"most likely correct English word or null"}.';
     const prompt=dir==='en'?enPrompt:esPrompt;
     try{
-      const txt=await this.askAI(prompt,1500);
+      const txt=await this.askAI(prompt,1500,'dict');
       let s=txt.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
       const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0)s=s.slice(a,b+1);
       const entry=JSON.parse(s);
@@ -742,6 +912,150 @@ class Component extends DCLogic {
     }
   }
   saveKey(v){try{if(v)localStorage.setItem('svt_gemini_key',v.trim());else localStorage.removeItem('svt_gemini_key')}catch(e){}this.forceUpdate()}
+  copyText(t){try{navigator.clipboard&&navigator.clipboard.writeText(t||'')}catch(e){}}
+  convSave(){try{localStorage.setItem('svt_conv',JSON.stringify(this.state.conv.msgs.slice(-40)))}catch(e){}}
+  loadConv(){try{const m=JSON.parse(localStorage.getItem('svt_conv'));if(Array.isArray(m)){const clean=m.filter(x=>x&&x.side&&x.srcText);this.setState({conv:Object.assign({},this.state.conv,{msgs:clean})})}}catch(e){}}
+  speak(text,lang){
+    try{
+      if(!('speechSynthesis' in window)||!text)return;
+      window.speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text);
+      u.lang=lang||'es-ES';u.rate=0.95;
+      const vs=window.speechSynthesis.getVoices()||[];
+      const v=vs.find(x=>x.lang&&x.lang.toLowerCase().startsWith((u.lang||'es').slice(0,2)));
+      if(v)u.voice=v;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  langName(code){return ({es:'Spanish',en:'English',fa:'Persian (Farsi)'})[(code||'es').slice(0,2)]||'Spanish'}
+  talk(side){if(this.state.conv.engine==='gemini')this.recordSide(side);else this.listenSide(side);}
+  blobB64(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res((r.result+'').split(',')[1]||'');r.onerror=rej;r.readAsDataURL(blob);});}
+  async recordSide(side){
+    const C=this.state.conv;
+    if(C.recording){try{this._mr&&this._mr.state!=='inactive'&&this._mr.stop()}catch(e){}return;}
+    if(!navigator.mediaDevices||!window.MediaRecorder){this.setState({conv:Object.assign({},C,{error:'Tu navegador no puede grabar audio. Usa el motor Rápido o escribe.'})});return}
+    if(!this.geminiKey()){this.setState({conv:Object.assign({},C,{error:'Añade tu clave de Google Gemini (Diccionario → "Configurar clave") para el motor Preciso.'})});return}
+    const src=side==='A'?C.sideALang:C.sideBLang;
+    const tgt=side==='A'?C.sideBLang:C.sideALang;
+    try{if(window.speechSynthesis)window.speechSynthesis.cancel()}catch(e){}
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      let mime='';
+      ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].some(m=>{if(window.MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m)){mime=m;return true}return false});
+      const mr=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+      this._mr=mr;this._chunks=[];
+      mr.ondataavailable=e=>{if(e.data&&e.data.size)this._chunks.push(e.data)};
+      mr.onstop=async()=>{
+        try{stream.getTracks().forEach(t=>t.stop())}catch(e){}
+        const blob=new Blob(this._chunks,{type:(mr.mimeType||mime||'audio/webm').split(';')[0]});
+        this.setState({conv:Object.assign({},this.state.conv,{recording:false,activeSide:null})});
+        await this.transcribeGemini(side,src,tgt,blob);
+      };
+      mr.start();
+      this.setState({conv:Object.assign({},this.state.conv,{recording:true,activeSide:side,error:''})});
+    }catch(e){this.setState({conv:Object.assign({},this.state.conv,{recording:false,activeSide:null,error:'Permiso de micrófono denegado. Actívalo en el navegador.'})})}
+  }
+  async transcribeGemini(side,src,tgt,blob){
+    this.setState({conv:Object.assign({},this.state.conv,{loading:true,error:''})});
+    try{
+      const key=this.geminiKey();
+      const b64=await this.blobB64(blob);
+      const model=this.geminiModel('conv');
+      const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
+      const body={contents:[{parts:[
+        {text:'Transcribe this audio exactly as spoken. The language is '+this.langName(src)+'. Return ONLY the transcription text, with no quotes, labels or comments. If there is no clear speech, return an empty string.'},
+        {inline_data:{mime_type:blob.type||'audio/webm',data:b64}}]}],
+        generationConfig:{temperature:0,thinkingConfig:{thinkingBudget:0}}};
+      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!res.ok){const e=new Error('gemini '+res.status);e.status=res.status;throw e;}
+      const data=await res.json();
+      const c=data&&data.candidates&&data.candidates[0];
+      let txt=(c&&c.content&&c.content.parts&&c.content.parts.map(p=>p.text||'').join(''))||'';
+      txt=txt.trim().replace(/^["'“”]+|["'“”]+$/g,'');
+      if(!txt){this.setState({conv:Object.assign({},this.state.conv,{loading:false,error:'No te oí bien, inténtalo otra vez.'})});return}
+      this.setState({conv:Object.assign({},this.state.conv,{loading:false})});
+      await this.interpretTurn(side,src,tgt,txt);
+    }catch(e){
+      let msg='No pude transcribir. Revisa tu conexión e inténtalo de nuevo.';
+      if(e&&(e.status===403||e.status===429))msg='Clave rechazada o límite alcanzado. Espera un momento.';
+      else if(e&&e.status===400)msg='La clave de Gemini no es válida, o el audio no se pudo leer. Prueba el motor Rápido.';
+      this.setState({conv:Object.assign({},this.state.conv,{loading:false,error:msg})});
+    }
+  }
+  listenSide(side){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){this.setState({conv:Object.assign({},this.state.conv,{error:'Tu navegador no soporta el micrófono. Usa Chrome o Safari, o escribe abajo.'})});return}
+    const C=this.state.conv;
+    if(C.listening){this.stopListening();return}
+    try{if(window.speechSynthesis)window.speechSynthesis.cancel()}catch(e){}
+    const src=side==='A'?C.sideALang:C.sideBLang;
+    const tgt=side==='A'?C.sideBLang:C.sideALang;
+    const rec=new SR();this._rec=rec;
+    rec.lang=src;rec.interimResults=true;rec.maxAlternatives=1;rec.continuous=false;
+    rec.onresult=e=>{
+      let fin='',interim='';
+      for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript;else interim+=r[0].transcript;}
+      if(interim)this.setState({conv:Object.assign({},this.state.conv,{interim})});
+      if(fin){this.setState({conv:Object.assign({},this.state.conv,{interim:''})});this.interpretTurn(side,src,tgt,fin.trim());}
+    };
+    rec.onerror=ev=>{this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null,interim:'',error:ev.error==='not-allowed'?'Permiso de micrófono denegado. Actívalo en el navegador.':'No te oí bien, inténtalo otra vez.'})})};
+    rec.onend=()=>{this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null,interim:''})})};
+    try{rec.start();this.setState({conv:Object.assign({},this.state.conv,{listening:true,activeSide:side,error:'',interim:''})})}catch(e){}
+  }
+  stopListening(){try{this._rec&&this._rec.stop()}catch(e){}this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null})})}
+  async interpretTurn(side,src,tgt,text){
+    const t=(text||'').trim();if(!t)return;
+    const C=this.state.conv;
+    const msgs=C.msgs.concat([{side,srcLang:src,tgtLang:tgt,srcText:t,tgtText:'',pending:true}]);
+    this.setState({conv:Object.assign({},C,{msgs,loading:true,error:''})});
+    const prompt='Translate the following from '+this.langName(src)+' to '+this.langName(tgt)+'. It is one turn of a spoken face-to-face conversation, so keep it natural and conversational. Return ONLY the translation — no quotes, no explanations, no notes.\n\n'+t;
+    try{
+      let out=await this.askAI(prompt,500,'conv');
+      out=(out||'').trim().replace(/^```[a-z]*/i,'').replace(/```$/,'').trim().replace(/^["'“”]+|["'“”]+$/g,'');
+      const arr=this.state.conv.msgs.slice();
+      arr[arr.length-1]=Object.assign({},arr[arr.length-1],{tgtText:out,pending:false});
+      this.setState({conv:Object.assign({},this.state.conv,{msgs:arr,loading:false})},()=>{this.convSave();if(this.state.conv.speak)this.speak(out,tgt);});
+    }catch(e){
+      let msg='No pude traducir. Revisa tu conexión e inténtalo de nuevo.';
+      if(e&&e.noProvider)msg='Añade tu clave de Google Gemini (gratis) en el Diccionario → "Configurar clave" para conversar.';
+      else if(e&&(e.status===403||e.status===429))msg='Clave rechazada o límite alcanzado. Espera un momento.';
+      const arr=this.state.conv.msgs.slice();arr.pop();
+      this.setState({conv:Object.assign({},this.state.conv,{msgs:arr,loading:false,error:msg})});
+    }
+  }
+  clearConv(){this.setState({conv:Object.assign({},this.state.conv,{msgs:[],error:''})},()=>this.convSave());}
+  async runTranslate(){
+    const T=this.state.tr;const input=(T.input||'').trim();
+    if(!input){this.setState({tr:Object.assign({},T,{error:'Escribe algo para traducir.'})});return}
+    this.setState({tr:Object.assign({},T,{loading:true,error:'',out:null})});
+    const LANG={fa:'Persian (Farsi)',en:'English',es:'Spanish'};
+    let prompt;
+    if(T.mode==='revise'){
+      prompt='You are a friendly bilingual writing assistant helping a Spanish learner (A1–A2) message a real person. '+
+        'The user wrote this draft (it may be in English, Spanish or Persian, possibly with mistakes):\n"""'+input+'"""\n'+
+        'Return ONLY a valid JSON object (no markdown) with this exact shape:\n'+
+        '{"english":"a clear, natural, polished ENGLISH version of what they mean","spanish":"the natural SPANISH translation they can send (friendly, correct)","notes":"1-2 short bullet tips in English on what you improved or grammar to watch; or null"}';
+    }else{
+      const src=T.dir.split('2')[0],tgt=T.dir.split('2')[1];
+      prompt='You are an expert translator. Translate the following text from '+LANG[src]+' to '+LANG[tgt]+'.\n'+
+        'Text:\n"""'+input+'"""\n'+
+        'Return ONLY a valid JSON object (no markdown) with this exact shape:\n'+
+        '{"translation":"the natural, correct translation in '+LANG[tgt]+'","alt":"an alternative or more casual phrasing in '+LANG[tgt]+', or null","note":"a short usage/grammar note in English, or null"}';
+    }
+    try{
+      const txt=await this.askAI(prompt,1500,'translate');
+      let s=(txt||'').trim().replace(/^```(json)?/i,'').replace(/```$/,'').trim();
+      const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0)s=s.slice(a,b+1);
+      const out=JSON.parse(s);
+      this.setState({tr:Object.assign({},this.state.tr,{loading:false,out})});
+    }catch(e){
+      let msg='No se pudo traducir. Revisa tu conexión e inténtalo de nuevo.';
+      if(e&&e.noProvider)msg='Añade tu clave de Google Gemini (gratis) en el Diccionario → "Configurar clave" para usar el traductor.';
+      else if(e&&e.status===400)msg='La clave de Gemini no es válida. Revísala en el Diccionario.';
+      else if(e&&(e.status===403||e.status===429))msg='Clave rechazada o límite alcanzado. Espera un momento e inténtalo de nuevo.';
+      this.setState({tr:Object.assign({},this.state.tr,{loading:false,error:msg})});
+    }
+  }
   shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
   genQ(){
     const V=this.state.verbs;if(!V||!V.length)return;
@@ -792,13 +1106,13 @@ class Component extends DCLogic {
     const st=this.state,V=st.verbs;
     const loading=!V;
     const view=st.view;
-    const tabs=[['landing','Inicio'],['home','Verbos'],['vocab','Vocabulario'],['dict','Diccionario'],['test','Test'],['flash','Tarjetas'],['cheat','Chuleta']].map(([id,label])=>{const on=(view===id||(id==='home'&&view==='verb'));return {label,go:()=>this.go(id),
+    const tabs=[['landing','Inicio'],['home','Verbos'],['vocab','Vocabulario'],['dict','Diccionario'],['translate','Traductor'],['conv','Conversar'],['test','Test'],['flash','Tarjetas'],['cheat','Chuleta']].map(([id,label])=>{const on=(view===id||(id==='home'&&view==='verb'));return {label,go:()=>this.go(id),
       style:{padding:'10px 14px',borderRadius:'8px',border:'none',cursor:'pointer',fontSize:'13.5px',fontWeight:600,minHeight:'44px',background:on?'#1B1A17':'transparent',color:on?'#fff':'#5C574D'}};});
     const out={accent:this.props.accentColor??'#B54A2B',loading,tabs,
-      isLanding:!loading&&view==='landing',isHome:!loading&&view==='home',isVerb:!loading&&view==='verb',isTest:!loading&&view==='test',isFlash:!loading&&view==='flash',isCheat:!loading&&view==='cheat',isDict:!loading&&view==='dict',isVocab:!loading&&view==='vocab',
+      isLanding:!loading&&view==='landing',isHome:!loading&&view==='home',isVerb:!loading&&view==='verb',isTest:!loading&&view==='test',isFlash:!loading&&view==='flash',isCheat:!loading&&view==='cheat',isDict:!loading&&view==='dict',isVocab:!loading&&view==='vocab',isTranslate:!loading&&view==='translate',isConv:!loading&&view==='conv',
       goHome:()=>this.go('home'),goLanding:()=>this.go('landing'),goTest:()=>this.go('test'),onRandom:()=>this.random(),
       landGoTest:()=>this.go('test'),landGoRandom:()=>this.random(),
-      goVerbos:()=>this.go('home'),goVocab:()=>this.go('vocab'),goDict:()=>this.go('dict'),goFlash:()=>this.go('flash'),goCheat:()=>this.go('cheat'),
+      goVerbos:()=>this.go('home'),goVocab:()=>this.go('vocab'),goDict:()=>this.go('dict'),goFlash:()=>this.go('flash'),goCheat:()=>this.go('cheat'),goTranslate:()=>this.go('translate'),goConv:()=>this.go('conv'),
       q:st.q,onSearch:e=>this.setState({q:e.target.value})};
     if(loading)return out;
     const hideTr=this.props.hideTranslations===true;
@@ -926,6 +1240,106 @@ class Component extends DCLogic {
       }
       out.vocEmpty=filtered.length===0;
     }
+    // ---- Traductor ----
+    {
+      const T=st.tr;
+      const modeChip=(active)=>({padding:'9px 15px',borderRadius:'999px',cursor:'pointer',fontSize:'13.5px',fontWeight:700,border:'2px solid #1B1A17',boxShadow:active?'0 3px 0 #1B1A17':'none',background:active?'#1B1A17':'#fff',color:active?'#FFD21A':'#1B1A17'});
+      out.trModeTranslate=modeChip(T.mode==='translate');
+      out.trModeRevise=modeChip(T.mode==='revise');
+      out.setModeTranslate=()=>this.setState({tr:Object.assign({},T,{mode:'translate',out:null,error:''})});
+      out.setModeRevise=()=>this.setState({tr:Object.assign({},T,{mode:'revise',out:null,error:''})});
+      out.trIsTranslate=T.mode==='translate';
+      out.trIsRevise=T.mode==='revise';
+      const dirs=[['fa2es','فارسی → Español'],['es2fa','Español → فارسی'],['en2es','English → Español'],['es2en','Español → English']];
+      out.trDirs=dirs.map(([id,label])=>({label,go:()=>this.setState({tr:Object.assign({},this.state.tr,{dir:id,out:null,error:''})}),style:this.chipStyle(T.dir===id)}));
+      out.trInput=T.input;
+      out.onTrInput=e=>this.setState({tr:Object.assign({},this.state.tr,{input:e.target.value})});
+      out.trInputDir=(T.mode==='translate'&&T.dir.split('2')[0]==='fa')?'rtl':'ltr';
+      out.trRun=()=>this.runTranslate();
+      out.trClear=()=>this.setState({tr:Object.assign({},this.state.tr,{input:'',out:null,error:''})});
+      out.trLoading=T.loading;out.trError=T.error;
+      out.trBig=T.big;
+      out.trToggleBig=()=>this.setState({tr:Object.assign({},this.state.tr,{big:!T.big})});
+      out.trBigStyle={padding:'9px 13px',borderRadius:'10px',cursor:'pointer',fontSize:'13px',fontWeight:700,border:'2px solid #1B1A17',background:T.big?'#1B1A17':'#fff',color:T.big?'#FFD21A':'#1B1A17'};
+      const big=T.big;
+      const bodyFS=big?'25px':'17px';const bodyLH=big?'1.5':'1.45';
+      out.trRunLabel=T.mode==='revise'?'Revisar y mejorar':'Traducir';
+      const o=T.out;out.trHasOut=!!o;
+      if(o){
+        if(T.mode==='revise'){
+          out.trCards=[
+            {label:'✏️ Inglés mejorado',text:o.english||'',dir:'ltr',bg:'#EAF3FB',bar:'#2B5FB5',
+             style:{fontSize:bodyFS,lineHeight:bodyLH,fontWeight:600,color:'#173A5E',whiteSpace:'pre-wrap',direction:'ltr'},copy:()=>this.copyText(o.english)},
+            {label:'🇪🇸 Español para enviar',text:o.spanish||'',dir:'ltr',bg:'#FFF7E0',bar:'#E0662B',
+             style:{fontSize:bodyFS,lineHeight:bodyLH,fontWeight:700,color:'#1B1A17',whiteSpace:'pre-wrap',direction:'ltr'},copy:()=>this.copyText(o.spanish)}
+          ];
+          out.trNote=(o.notes&&o.notes!=='null')?o.notes:'';out.trHasNote=!!(o.notes&&o.notes!=='null');
+        }else{
+          const tgt=T.dir.split('2')[1];const rtl=tgt==='fa';
+          out.trCards=[{label:'Traducción',text:o.translation||'',bg:'#EAF7EE',bar:'#4CAF50',
+            style:{fontSize:bodyFS,lineHeight:bodyLH,fontWeight:700,color:'#1B1A17',whiteSpace:'pre-wrap',direction:rtl?'rtl':'ltr',textAlign:rtl?'right':'left'},copy:()=>this.copyText(o.translation)}];
+          if(o.alt&&o.alt!=='null')out.trCards.push({label:'Alternativa',text:o.alt,bg:'#F4F1FF',bar:'#9C4DCC',
+            style:{fontSize:bodyFS,lineHeight:bodyLH,fontWeight:600,color:'#3A2A55',whiteSpace:'pre-wrap',direction:rtl?'rtl':'ltr',textAlign:rtl?'right':'left'},copy:()=>this.copyText(o.alt)});
+          out.trNote=(o.note&&o.note!=='null')?o.note:'';out.trHasNote=!!(o.note&&o.note!=='null');
+        }
+      }
+    }
+    // ---- Conversar (walkie-talkie interpreter) ----
+    {
+      const C=st.conv;const big=C.big;
+      const LG={'es-ES':{flag:'🇪🇸',name:'Español'},'en-US':{flag:'🇬🇧',name:'English'},'fa-IR':{flag:'🇮🇷',name:'فارسی'}};
+      const cycle={'en-US':'es-ES','es-ES':'fa-IR','fa-IR':'en-US'};
+      const gi=LG[C.sideALang]||LG['en-US'],gj=LG[C.sideBLang]||LG['es-ES'];
+      out.convALabel=gi.flag+' '+gi.name;out.convBLabel=gj.flag+' '+gj.name;
+      out.convCycleA=()=>this.setState({conv:Object.assign({},this.state.conv,{sideALang:cycle[C.sideALang]||'en-US'})});
+      out.convCycleB=()=>this.setState({conv:Object.assign({},this.state.conv,{sideBLang:cycle[C.sideBLang]||'es-ES'})});
+      const listeningA=(C.listening||C.recording)&&C.activeSide==='A',listeningB=(C.listening||C.recording)&&C.activeSide==='B';
+      const busyLbl=C.engine==='gemini'?'● Grabando…':'● Escuchando…';
+      out.convBtnALabel=listeningA?busyLbl:('🎤 '+gi.name);
+      out.convBtnBLabel=listeningB?busyLbl:('🎤 '+gj.name);
+      const bigBtn=(active,color)=>({flex:1,minWidth:'140px',padding:'20px 16px',borderRadius:'16px',border:'2px solid #1B1A17',cursor:'pointer',fontWeight:800,fontSize:big?'19px':'17px',boxShadow:'0 5px 0 #1B1A17',background:active?'#E0662B':color,color:active?'#fff':'#1B1A17'});
+      out.convBtnAStyle=bigBtn(listeningA,'#FFD21A');
+      out.convBtnBStyle=bigBtn(listeningB,'#8FD6FF');
+      out.convTalkA=()=>this.talk('A');
+      out.convTalkB=()=>this.talk('B');
+      const engChip=active=>({padding:'7px 12px',borderRadius:'999px',cursor:'pointer',fontSize:'12.5px',fontWeight:700,border:'2px solid #1B1A17',background:active?'#1B1A17':'#fff',color:active?'#FFD21A':'#1B1A17'});
+      out.convEngGemini=engChip(C.engine==='gemini');
+      out.convEngBrowser=engChip(C.engine==='browser');
+      out.convSetEngGemini=()=>this.setState({conv:Object.assign({},this.state.conv,{engine:'gemini'})});
+      out.convSetEngBrowser=()=>this.setState({conv:Object.assign({},this.state.conv,{engine:'browser'})});
+      out.convEngHint=C.engine==='gemini'?'🎯 Preciso: graba y transcribe con Gemini. Toca para empezar y otra vez para parar.':'⚡ Rápido: usa el micrófono del navegador (Chrome/Safari). Toca y habla.';
+      const convModel=this.geminiModel('conv');
+      const cmch=active=>({padding:'7px 12px',borderRadius:'999px',cursor:'pointer',fontSize:'12.5px',fontWeight:700,border:'2px solid #1B1A17',background:active?'#1B1A17':'#fff',color:active?'#FFD21A':'#1B1A17'});
+      out.convModelLite=cmch(convModel==='gemini-flash-lite-latest');
+      out.convModelPro=cmch(convModel==='gemini-flash-latest');
+      out.convSetModelLite=()=>this.saveModel('conv','gemini-flash-lite-latest');
+      out.convSetModelPro=()=>this.saveModel('conv','gemini-flash-latest');
+      out.convSpeakOn=C.speak;
+      out.convToggleSpeak=()=>this.setState({conv:Object.assign({},this.state.conv,{speak:!C.speak})});
+      out.convSpeakStyle={padding:'9px 13px',borderRadius:'10px',cursor:'pointer',fontSize:'13px',fontWeight:700,border:'2px solid #1B1A17',background:C.speak?'#1B1A17':'#fff',color:C.speak?'#FFD21A':'#1B1A17'};
+      out.convBigStyle={padding:'9px 13px',borderRadius:'10px',cursor:'pointer',fontSize:'13px',fontWeight:700,border:'2px solid #1B1A17',background:big?'#1B1A17':'#fff',color:big?'#FFD21A':'#1B1A17'};
+      out.convToggleBig=()=>this.setState({conv:Object.assign({},this.state.conv,{big:!big})});
+      out.convClear=()=>this.clearConv();
+      out.convEmpty=C.msgs.length===0&&!C.loading;
+      out.convError=C.error;out.convInterim=C.interim;out.convHasInterim=!!C.interim;out.convLoading=C.loading;
+      const fs=big?'23px':'17px',sfs=big?'16px':'13px',lh=big?'1.5':'1.4';
+      out.convMsgs=C.msgs.map(m=>{
+        const isA=m.side==='A';const src=LG[m.srcLang]||{flag:'',name:''},tgt=LG[m.tgtLang]||{flag:'',name:''};
+        const tgtRtl=(m.tgtLang||'').startsWith('fa'),srcRtl=(m.srcLang||'').startsWith('fa');
+        return {
+          rowStyle:{display:'flex',justifyContent:isA?'flex-start':'flex-end'},
+          bubbleStyle:{maxWidth:'86%',background:isA?'#FFFDF2':'#F0F9FF',border:'2px solid #1B1A17',borderRadius:isA?'16px 16px 16px 4px':'16px 16px 4px 16px',padding:'11px 14px',boxShadow:'0 3px 0 #1B1A17'},
+          srcLabel:src.flag+' dijo:',
+          srcStyle:{fontSize:sfs,color:'#8A857B',fontWeight:600,whiteSpace:'pre-wrap',direction:srcRtl?'rtl':'ltr',textAlign:srcRtl?'right':'left'},
+          srcText:m.srcText,
+          pending:!!m.pending,
+          tgtLabel:tgt.flag+' '+tgt.name,
+          tgtStyle:{fontSize:fs,lineHeight:lh,fontWeight:800,color:'#1B1A17',marginTop:'4px',whiteSpace:'pre-wrap',direction:tgtRtl?'rtl':'ltr',textAlign:tgtRtl?'right':'left'},
+          tgtText:m.tgtText,
+          replay:()=>this.speak(m.tgtText,m.tgtLang)
+        };
+      });
+    }
     const D=st.dict;
     out.dictQ=D.q;out.dictLoading=D.loading;out.dictError=D.error;
     const hasKey=!!this.geminiKey();
@@ -938,6 +1352,13 @@ class Component extends DCLogic {
     out.onKeyDraft=e=>this.setState({keyDraft:e.target.value});
     out.saveKey=()=>{this.saveKey(st.keyDraft||'');this.setState({keyOpen:false})};
     out.clearKey=()=>{this.saveKey('');this.setState({keyDraft:'',keyOpen:false})};
+    const mch=active=>({padding:'9px 14px',borderRadius:'10px',cursor:'pointer',fontSize:'13px',fontWeight:700,border:'2px solid '+(active?'#1B1A17':'#E1DCD2'),background:active?'#1B1A17':'#fff',color:active?'#FFD21A':'#5C574D'});
+    const dictModel=this.geminiModel('dict');
+    out.modelLiteStyle=mch(dictModel==='gemini-flash-lite-latest');
+    out.modelProStyle=mch(dictModel==='gemini-flash-latest');
+    out.setModelLite=()=>this.saveModel('dict','gemini-flash-lite-latest');
+    out.setModelPro=()=>this.saveModel('dict','gemini-flash-latest');
+    out.modelHint=dictModel==='gemini-flash-latest'?'Flash da entradas más precisas, pero es un poco más lento y gasta más cuota.':'Flash-Lite es el más rápido y el que menos cuota usa.';
     const setDir=dir=>this.setState({dict:Object.assign({},this.state.dict,{dir,entry:null,error:''})});
     out.dictDirs=[['es','Español → Inglés / Español'],['en','Inglés → Español']].map(([id,label])=>({label,go:()=>setDir(id),style:this.chipStyle(D.dir===id)}));
     out.dictPlaceholder=D.dir==='en'?'Search any English word… (dog, happy, to run)':'Busca cualquier palabra… (perro, feliz, correr)';
