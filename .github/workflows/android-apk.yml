@@ -41,8 +41,6 @@ jobs:
           expected_hash = '20bdfff37ee304851f4002f8dd11ca14349c5710ac51f3c341db0710a543f953'
 
           if hashlib.sha256(encoded.encode()).hexdigest() != expected_hash:
-              # A GitHub contents write dropped one character from the long key text.
-              # Recover that single character deterministically from the original SHA-256.
               assert len(encoded) == 3703, f'unexpected signing data length: {len(encoded)}'
               alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits + '+/'
               fixed = None
@@ -83,6 +81,11 @@ jobs:
 
       - name: Prepare fully local web bundle
         run: python3 android/prepare_web.py
+
+      - name: Prepare Marsupilami launcher icon
+        run: |
+          mkdir -p android/app/src/main/res/drawable-nodpi
+          cp assets/pet/idle.png android/app/src/main/res/drawable-nodpi/ic_launcher.png
 
       - name: Build optimized release APK
         working-directory: android
