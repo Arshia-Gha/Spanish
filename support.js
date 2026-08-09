@@ -82,18 +82,15 @@
     }
   };
 
-  // Keep the tutor internally isolated, but present it as a normal section of
-  // the main app so the working generated runtime does not need to be edited.
   let tutorActive = false;
   let tutorSection = null;
   let tutorFrame = null;
   let tutorButton = null;
-  let sectionObserver = null;
 
   const hideRegularSections = () => {
     if (!tutorActive) return;
     document.querySelectorAll("main").forEach(main => {
-      if (main === tutorSection || main.closest("iframe")) return;
+      if (main === tutorSection) return;
       if (!main.dataset.tutorHidden) {
         main.dataset.tutorHidden = "1";
         main.dataset.tutorOldDisplay = main.style.display || "";
@@ -111,7 +108,7 @@
   };
 
   const setTutorButtonActive = active => {
-    if (!tutorButton) return;
+    if (!tutorButton || !tutorButton.isConnected) return;
     tutorButton.style.background = active ? "#1B1A17" : "transparent";
     tutorButton.style.color = active ? "#fff" : "#5C574D";
   };
@@ -140,26 +137,13 @@
 
     tutorSection = document.createElement("main");
     tutorSection.id = "aiTutorMainSection";
-    tutorSection.style.cssText = [
-      "max-width:1060px",
-      "margin:0 auto",
-      "padding:0 0 0",
-      "display:none",
-      "animation:fadein .2s ease"
-    ].join(";");
+    tutorSection.style.cssText = "max-width:1060px;margin:0 auto;padding:0;display:none;animation:fadein .2s ease";
 
     tutorFrame = document.createElement("iframe");
     tutorFrame.src = "./chat.html?embedded=1";
     tutorFrame.title = "Tutor de español";
     tutorFrame.setAttribute("allow", "microphone");
-    tutorFrame.style.cssText = [
-      "display:block",
-      "width:100%",
-      "height:calc(100dvh - 66px)",
-      "min-height:620px",
-      "border:0",
-      "background:#FAF9F6"
-    ].join(";");
+    tutorFrame.style.cssText = "display:block;width:100%;height:calc(100dvh - 66px);min-height:620px;border:0;background:#FAF9F6";
     tutorFrame.addEventListener("load", prepareEmbeddedTutor);
     tutorSection.appendChild(tutorFrame);
     header.insertAdjacentElement("afterend", tutorSection);
@@ -174,13 +158,13 @@
     section.style.display = "block";
     setTutorButtonActive(true);
     if (location.hash !== "#chat") history.pushState({tutorChat:true}, "", "#chat");
-    window.scrollTo({top:0, behavior:"instant"});
+    window.scrollTo(0, 0);
   };
 
   const closeTutor = ({cleanHash=false} = {}) => {
     if (!tutorActive) return;
     tutorActive = false;
-    if (tutorSection) tutorSection.style.display = "none";
+    if (tutorSection && tutorSection.isConnected) tutorSection.style.display = "none";
     restoreRegularSections();
     setTutorButtonActive(false);
     if (cleanHash && location.hash === "#chat") {
@@ -191,9 +175,11 @@
   const installTutorTab = () => {
     const nav = document.querySelector("header nav");
     if (!nav) return false;
+
     const existing = nav.querySelector('[data-tutor-chat="1"]');
     if (existing) {
       tutorButton = existing;
+      setTutorButtonActive(tutorActive);
       return true;
     }
 
@@ -208,36 +194,39 @@
       openTutor();
     });
     nav.appendChild(tutorButton);
-
-    // Any normal app tab closes the embedded tutor first, then the original
-    // click handler continues normally.
-    nav.addEventListener("click", event => {
-      if (!tutorActive) return;
-      if (event.target.closest('[data-tutor-chat="1"]')) return;
-      closeTutor({cleanHash:true});
-    }, true);
-
+    setTutorButtonActive(tutorActive);
     return true;
   };
 
-  const startTutorIntegration = () => {
-    const install = () => {
-      if (!installTutorTab()) return false;
-      ensureTutorSection();
-      if (location.hash === "#chat") openTutor();
-      return true;
-    };
+  const handleNormalNavClick = event => {
+    if (!tutorActive) return;
+    if (event.target.closest('[data-tutor-chat="1"]')) return;
+    if (event.target.closest("header nav button")) closeTutor({cleanHash:true});
+  };
 
-    if (!install()) {
-      const observer = new MutationObserver(() => {
-        if (install()) observer.disconnect();
-      });
-      observer.observe(document.documentElement, {childList:true, subtree:true});
-      setTimeout(() => observer.disconnect(), 15000);
+  const maintainTutorUI = () => {
+    const installed = installTutorTab();
+    if (!installed) return;
+    ensureTutorSection();
+    if (tutorActive) {
+      hideRegularSections();
+      if (tutorSection) tutorSection.style.display = "block";
+      setTutorButtonActive(true);
     }
+  };
 
-    sectionObserver = new MutationObserver(() => hideRegularSections());
-    sectionObserver.observe(document.documentElement, {childList:true, subtree:true});
+  const startTutorIntegration = () => {
+    document.addEventListener("click", handleNormalNavClick, true);
+
+    // The generated app may replace its rendered header during initialization or
+    // later state updates. Observe the whole document and always reattach Chat
+    // to the current rendered nav instead of assuming the first nav survives.
+    const observer = new MutationObserver(() => maintainTutorUI());
+    observer.observe(document.documentElement, {childList:true, subtree:true});
+
+    // A short heartbeat covers renderer updates that do not produce a useful
+    // mutation for our observer. It is tiny and stops doing work once Chat exists.
+    setInterval(maintainTutorUI, 750);
 
     window.addEventListener("popstate", () => {
       if (location.hash === "#chat") openTutor();
@@ -247,6 +236,17 @@
       if (location.hash === "#chat") openTutor();
       else closeTutor();
     });
+
+    maintainTutorUI();
+    if (location.hash === "#chat") {
+      const waitForRender = setInterval(() => {
+        if (installTutorTab() && ensureTutorSection()) {
+          clearInterval(waitForRender);
+          openTutor();
+        }
+      }, 150);
+      setTimeout(() => clearInterval(waitForRender), 10000);
+    }
   };
 
   if (document.readyState === "loading") {
