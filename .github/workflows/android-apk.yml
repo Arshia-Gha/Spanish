@@ -1,0 +1,99 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'data/**'
+      - 'assets/**'
+      - 'android/**'
+      - '.github/workflows/android-apk.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'data/**'
+      - 'assets/**'
+      - 'android/**'
+      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore stable signing key
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, hashlib, string
+
+          parts = [Path(f'android/signing/key.part{i}').read_text(encoding='utf-8').strip() for i in range(5)]
+          encoded = ''.join(parts)
+          expected_hash = '20bdfff37ee304851f4002f8dd11ca14349c5710ac51f3c341db0710a543f953'
+
+          if hashlib.sha256(encoded.encode()).hexdigest() != expected_hash:
+              # A GitHub contents write dropped one character from the long key text.
+              # Recover that single character deterministically from the original SHA-256.
+              assert len(encoded) == 3703, f'unexpected signing data length: {len(encoded)}'
+              alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits + '+/'
+              fixed = None
+              for pos in range(len(encoded) + 1):
+                  left, right = encoded[:pos], encoded[pos:]
+                  for ch in alphabet:
+                      candidate = left + ch + right
+                      if hashlib.sha256(candidate.encode()).hexdigest() == expected_hash:
+                          fixed = candidate
+                          break
+                  if fixed is not None:
+                      break
+              assert fixed is not None, 'could not recover signing key text'
+              encoded = fixed
+
+          raw = base64.b64decode(encoded, validate=True)
+          assert hashlib.sha256(raw).hexdigest() == '1d00f1b0d06f895e47343319062386ffb33280b174970c508c2a4b9ebba46490'
+          Path('android/signing/arshia-espanol.jks').write_bytes(raw)
+          PY
+          keytool -list -keystore android/signing/arshia-espanol.jks -storepass arshia-spanish -alias arshia-espanol
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+
+      - name: Set up Gradle 8.13
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Prepare fully local web bundle
+        run: python3 android/prepare_web.py
+
+      - name: Build optimized release APK
+        working-directory: android
+        run: gradle --no-daemon :app:assembleRelease
+
+      - name: Name APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk Arshia-Espanol.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arshia-Espanol-APK
+          path: Arshia-Espanol.apk
+          if-no-files-found: error
