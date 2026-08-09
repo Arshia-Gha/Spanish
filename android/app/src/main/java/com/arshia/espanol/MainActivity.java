@@ -4,10 +4,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Base64;
+import android.view.WindowInsets;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
 import android.webkit.PermissionRequest;
@@ -18,6 +21,11 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,19 +34,42 @@ import java.util.Locale;
 public class MainActivity extends Activity {
     private static final int REQ_AUDIO = 1001;
     private static final String APP_HOST = "app.local";
+    private static final int PENDING_NONE = 0;
+    private static final int PENDING_SPEECH = 1;
+    private static final int PENDING_RECORD = 2;
 
     private WebView webView;
     private PermissionRequest pendingAudioRequest;
     private SpeechRecognizer speechRecognizer;
+    private MediaRecorder mediaRecorder;
+    private File audioFile;
     private String pendingSpeechLanguage;
-    private boolean pendingNativeSpeechStart;
+    private int pendingNativeAction = PENDING_NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         webView = new WebView(this);
+        webView.setBackgroundColor(0xFFFAF9F6);
         setContentView(webView);
+
+        // Android 15+ draws apps edge-to-edge by default. Keep the web UI out of
+        // the status/navigation bars while still using the whole safe content area.
+        webView.setOnApplyWindowInsetsListener((view, insets) -> {
+            int top;
+            int bottom;
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                top = bars.top;
+                bottom = bars.bottom;
+            } else {
+                top = insets.getSystemWindowInsetTop();
+                bottom = insets.getSystemWindowInsetBottom();
+            }
+            view.setPadding(0, top, 0, bottom);
+            return insets;
+        });
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -111,18 +142,30 @@ public class MainActivity extends Activity {
                 }
             });
         }
+
+        @JavascriptInterface
+        public void startRecording() {
+            runOnUiThread(MainActivity.this::startNativeRecording);
+        }
+
+        @JavascriptInterface
+        public void stopRecording() {
+            runOnUiThread(MainActivity.this::stopNativeRecording);
+        }
+    }
+
+    private void requestAudioFor(int action) {
+        pendingNativeAction = action;
+        requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_AUDIO);
     }
 
     private void startNativeSpeech(String language) {
         pendingSpeechLanguage = normalizeLanguage(language);
-
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            pendingNativeSpeechStart = true;
-            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_AUDIO);
+            requestAudioFor(PENDING_SPEECH);
             return;
         }
-
-        pendingNativeSpeechStart = false;
+        pendingNativeAction = PENDING_NONE;
         beginSpeechRecognition(pendingSpeechLanguage);
     }
 
@@ -187,34 +230,112 @@ public class MainActivity extends Activity {
         speechRecognizer.startListening(intent);
     }
 
-    private String jsQuote(String value) {
-        if (value == null) return "";
-        return value.replace("\\", "\\\\")
-                .replace("'", "\\'")
-                .replace("\r", "\\r")
-                .replace("\n", "\\n")
-                .replace("\u2028", "\\u2028")
-                .replace("\u2029", "\\u2029");
+    private void startNativeRecording() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestAudioFor(PENDING_RECORD);
+            return;
+        }
+        pendingNativeAction = PENDING_NONE;
+        releaseRecorder();
+        try {
+            audioFile = new File(getCacheDir(), "conversation-" + System.currentTimeMillis() + ".m4a");
+            mediaRecorder = new MediaRecorder();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mediaRecorder.setAudioEncodingBitRate(96000);
+            mediaRecorder.setAudioSamplingRate(44100);
+            mediaRecorder.setOutputFile(audioFile.getAbsolutePath());
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+            sendRecordingEvent("started");
+        } catch (Exception e) {
+            releaseRecorder();
+            sendRecordingError("start-failed");
+        }
+    }
+
+    private void stopNativeRecording() {
+        if (mediaRecorder == null) {
+            sendRecordingError("not-recording");
+            return;
+        }
+        try {
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            mediaRecorder = null;
+            if (audioFile == null || !audioFile.exists() || audioFile.length() == 0) {
+                sendRecordingError("empty-audio");
+                return;
+            }
+            byte[] bytes = readFile(audioFile);
+            String base64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
+            sendRecordingResult(base64, "audio/mp4");
+        } catch (Exception e) {
+            sendRecordingError("stop-failed");
+        } finally {
+            if (audioFile != null) {
+                try { audioFile.delete(); } catch (Exception ignored) {}
+                audioFile = null;
+            }
+            releaseRecorder();
+        }
+    }
+
+    private byte[] readFile(File file) throws IOException {
+        try (FileInputStream in = new FileInputStream(file);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int n;
+            while ((n = in.read(buffer)) > 0) out.write(buffer, 0, n);
+            return out.toByteArray();
+        }
+    }
+
+    private void releaseRecorder() {
+        if (mediaRecorder != null) {
+            try { mediaRecorder.reset(); } catch (Exception ignored) {}
+            try { mediaRecorder.release(); } catch (Exception ignored) {}
+            mediaRecorder = null;
+        }
+    }
+
+    private String js(String value) {
+        return JSONObject.quote(value == null ? "" : value);
+    }
+
+    private void evaluate(String script) {
+        runOnUiThread(() -> {
+            if (webView != null) webView.evaluateJavascript(script, null);
+        });
     }
 
     private void sendSpeechResult(String text) {
-        runOnUiThread(() -> webView.evaluateJavascript(
-                "window.__nativeSpeechResult&&window.__nativeSpeechResult('" + jsQuote(text) + "');", null));
+        evaluate("window.__nativeSpeechResult&&window.__nativeSpeechResult(" + js(text) + ");");
     }
 
     private void sendSpeechPartial(String text) {
-        runOnUiThread(() -> webView.evaluateJavascript(
-                "window.__nativeSpeechPartial&&window.__nativeSpeechPartial('" + jsQuote(text) + "');", null));
+        evaluate("window.__nativeSpeechPartial&&window.__nativeSpeechPartial(" + js(text) + ");");
     }
 
     private void sendSpeechError(String error) {
-        runOnUiThread(() -> webView.evaluateJavascript(
-                "window.__nativeSpeechError&&window.__nativeSpeechError('" + jsQuote(error) + "');", null));
+        evaluate("window.__nativeSpeechError&&window.__nativeSpeechError(" + js(error) + ");");
     }
 
     private void sendSpeechEvent(String event) {
-        runOnUiThread(() -> webView.evaluateJavascript(
-                "window.__nativeSpeechEvent&&window.__nativeSpeechEvent('" + jsQuote(event) + "');", null));
+        evaluate("window.__nativeSpeechEvent&&window.__nativeSpeechEvent(" + js(event) + ");");
+    }
+
+    private void sendRecordingResult(String base64, String mime) {
+        evaluate("window.__nativeRecordingResult&&window.__nativeRecordingResult(" + js(base64) + "," + js(mime) + ");");
+    }
+
+    private void sendRecordingError(String error) {
+        evaluate("window.__nativeRecordingError&&window.__nativeRecordingError(" + js(error) + ");");
+    }
+
+    private void sendRecordingEvent(String event) {
+        evaluate("window.__nativeRecordingEvent&&window.__nativeRecordingEvent(" + js(event) + ");");
     }
 
     @Override
@@ -233,13 +354,18 @@ public class MainActivity extends Activity {
             pendingAudioRequest = null;
         }
 
-        if (pendingNativeSpeechStart) {
-            pendingNativeSpeechStart = false;
-            if (granted) {
-                beginSpeechRecognition(pendingSpeechLanguage == null ? "es-ES" : pendingSpeechLanguage);
-            } else {
-                sendSpeechError("permission-denied");
-            }
+        int action = pendingNativeAction;
+        pendingNativeAction = PENDING_NONE;
+        if (!granted) {
+            if (action == PENDING_RECORD) sendRecordingError("permission-denied");
+            else if (action == PENDING_SPEECH) sendSpeechError("permission-denied");
+            return;
+        }
+
+        if (action == PENDING_SPEECH) {
+            beginSpeechRecognition(pendingSpeechLanguage == null ? "es-ES" : pendingSpeechLanguage);
+        } else if (action == PENDING_RECORD) {
+            startNativeRecording();
         }
     }
 
@@ -260,6 +386,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        releaseRecorder();
         if (speechRecognizer != null) {
             try { speechRecognizer.destroy(); } catch (Exception ignored) {}
             speechRecognizer = null;
