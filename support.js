@@ -82,5 +82,5 @@
     }
   };
 
-  document.write(`<script src="${RUNTIME_URL}"><\\/script>`);
+  document.write(`<script src="${RUNTIME_URL}"><\/script>`);
 })();
