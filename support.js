@@ -82,5 +82,27 @@
     }
   };
 
+  function addTutorChatLink() {
+    if (document.getElementById("svt-tutor-chat-link")) return true;
+    const nav = document.querySelector("header nav");
+    if (!nav) return false;
+    const link = document.createElement("a");
+    link.id = "svt-tutor-chat-link";
+    link.href = "chat.html";
+    link.textContent = "Chat";
+    link.style.cssText = "padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13.5px;font-weight:600;min-height:44px;display:flex;align-items:center;text-decoration:none;background:transparent;color:#5C574D";
+    nav.appendChild(link);
+    return true;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    if (addTutorChatLink()) return;
+    const observer = new MutationObserver(() => {
+      if (addTutorChatLink()) observer.disconnect();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(() => observer.disconnect(), 10000);
+  });
+
   document.write(`<script src="${RUNTIME_URL}"><\/script>`);
 })();
