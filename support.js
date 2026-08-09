@@ -82,5 +82,33 @@
     }
   };
 
+  // Add the tutor as a separate page without changing the generated web-app runtime.
+  const installTutorLink = () => {
+    const nav = document.querySelector("header nav");
+    if (!nav || nav.querySelector('[data-tutor-chat="1"]')) return false;
+    const link = document.createElement("a");
+    link.href = "./chat.html";
+    link.dataset.tutorChat = "1";
+    link.textContent = "Chat";
+    link.style.cssText = "padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13.5px;font-weight:600;min-height:44px;display:flex;align-items:center;text-decoration:none;background:transparent;color:#5C574D";
+    nav.appendChild(link);
+    return true;
+  };
+
+  const watchForTutorNav = () => {
+    if (installTutorLink()) return;
+    const observer = new MutationObserver(() => {
+      if (installTutorLink()) observer.disconnect();
+    });
+    observer.observe(document.documentElement, {childList:true, subtree:true});
+    setTimeout(() => observer.disconnect(), 15000);
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", watchForTutorNav, {once:true});
+  } else {
+    watchForTutorNav();
+  }
+
   document.write(`<script src="${RUNTIME_URL}"><\/script>`);
 })();
