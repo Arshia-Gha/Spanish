@@ -51,7 +51,15 @@ jobs:
         run: python3 android/prepare_web.py
 
       - name: Restore stable signing key
-        run: base64 -d android/signing/arshia-espanol.jks.b64 > android/signing/arshia-espanol.jks
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          src = Path('android/signing/arshia-espanol.jks.b64').read_text(encoding='utf-8')
+          clean = ''.join(src.split())
+          Path('android/signing/arshia-espanol.jks').write_bytes(base64.b64decode(clean, validate=False))
+          PY
+          keytool -list -keystore android/signing/arshia-espanol.jks -storepass arshia-spanish -alias arshia-espanol
 
       - name: Build optimized release APK
         working-directory: android
