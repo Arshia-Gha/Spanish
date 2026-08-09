@@ -82,32 +82,177 @@
     }
   };
 
-  // Add the tutor as a separate page without changing the generated web-app runtime.
-  const installTutorLink = () => {
+  // Keep the tutor internally isolated, but present it as a normal section of
+  // the main app so the working generated runtime does not need to be edited.
+  let tutorActive = false;
+  let tutorSection = null;
+  let tutorFrame = null;
+  let tutorButton = null;
+  let sectionObserver = null;
+
+  const hideRegularSections = () => {
+    if (!tutorActive) return;
+    document.querySelectorAll("main").forEach(main => {
+      if (main === tutorSection || main.closest("iframe")) return;
+      if (!main.dataset.tutorHidden) {
+        main.dataset.tutorHidden = "1";
+        main.dataset.tutorOldDisplay = main.style.display || "";
+      }
+      main.style.display = "none";
+    });
+  };
+
+  const restoreRegularSections = () => {
+    document.querySelectorAll('main[data-tutor-hidden="1"]').forEach(main => {
+      main.style.display = main.dataset.tutorOldDisplay || "";
+      delete main.dataset.tutorHidden;
+      delete main.dataset.tutorOldDisplay;
+    });
+  };
+
+  const setTutorButtonActive = active => {
+    if (!tutorButton) return;
+    tutorButton.style.background = active ? "#1B1A17" : "transparent";
+    tutorButton.style.color = active ? "#fff" : "#5C574D";
+  };
+
+  const prepareEmbeddedTutor = () => {
+    if (!tutorFrame) return;
+    try {
+      const doc = tutorFrame.contentDocument;
+      if (!doc) return;
+      const innerHeader = doc.querySelector("header");
+      if (innerHeader) innerHeader.style.display = "none";
+      const innerMain = doc.querySelector("main");
+      if (innerMain) {
+        innerMain.style.paddingTop = "10px";
+        innerMain.style.maxWidth = "860px";
+      }
+      doc.documentElement.style.background = "#FAF9F6";
+      doc.body.style.background = "#FAF9F6";
+    } catch (_) {}
+  };
+
+  const ensureTutorSection = () => {
+    if (tutorSection && tutorSection.isConnected) return tutorSection;
+    const header = document.querySelector("header");
+    if (!header) return null;
+
+    tutorSection = document.createElement("main");
+    tutorSection.id = "aiTutorMainSection";
+    tutorSection.style.cssText = [
+      "max-width:1060px",
+      "margin:0 auto",
+      "padding:0 0 0",
+      "display:none",
+      "animation:fadein .2s ease"
+    ].join(";");
+
+    tutorFrame = document.createElement("iframe");
+    tutorFrame.src = "./chat.html?embedded=1";
+    tutorFrame.title = "Tutor de español";
+    tutorFrame.setAttribute("allow", "microphone");
+    tutorFrame.style.cssText = [
+      "display:block",
+      "width:100%",
+      "height:calc(100dvh - 66px)",
+      "min-height:620px",
+      "border:0",
+      "background:#FAF9F6"
+    ].join(";");
+    tutorFrame.addEventListener("load", prepareEmbeddedTutor);
+    tutorSection.appendChild(tutorFrame);
+    header.insertAdjacentElement("afterend", tutorSection);
+    return tutorSection;
+  };
+
+  const openTutor = () => {
+    const section = ensureTutorSection();
+    if (!section) return;
+    tutorActive = true;
+    hideRegularSections();
+    section.style.display = "block";
+    setTutorButtonActive(true);
+    if (location.hash !== "#chat") history.pushState({tutorChat:true}, "", "#chat");
+    window.scrollTo({top:0, behavior:"instant"});
+  };
+
+  const closeTutor = ({cleanHash=false} = {}) => {
+    if (!tutorActive) return;
+    tutorActive = false;
+    if (tutorSection) tutorSection.style.display = "none";
+    restoreRegularSections();
+    setTutorButtonActive(false);
+    if (cleanHash && location.hash === "#chat") {
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  };
+
+  const installTutorTab = () => {
     const nav = document.querySelector("header nav");
-    if (!nav || nav.querySelector('[data-tutor-chat="1"]')) return false;
-    const link = document.createElement("a");
-    link.href = "./chat.html";
-    link.dataset.tutorChat = "1";
-    link.textContent = "Chat";
-    link.style.cssText = "padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13.5px;font-weight:600;min-height:44px;display:flex;align-items:center;text-decoration:none;background:transparent;color:#5C574D";
-    nav.appendChild(link);
+    if (!nav) return false;
+    const existing = nav.querySelector('[data-tutor-chat="1"]');
+    if (existing) {
+      tutorButton = existing;
+      return true;
+    }
+
+    tutorButton = document.createElement("button");
+    tutorButton.type = "button";
+    tutorButton.dataset.tutorChat = "1";
+    tutorButton.textContent = "Chat";
+    tutorButton.style.cssText = "padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13.5px;font-weight:600;min-height:44px;background:transparent;color:#5C574D";
+    tutorButton.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      openTutor();
+    });
+    nav.appendChild(tutorButton);
+
+    // Any normal app tab closes the embedded tutor first, then the original
+    // click handler continues normally.
+    nav.addEventListener("click", event => {
+      if (!tutorActive) return;
+      if (event.target.closest('[data-tutor-chat="1"]')) return;
+      closeTutor({cleanHash:true});
+    }, true);
+
     return true;
   };
 
-  const watchForTutorNav = () => {
-    if (installTutorLink()) return;
-    const observer = new MutationObserver(() => {
-      if (installTutorLink()) observer.disconnect();
+  const startTutorIntegration = () => {
+    const install = () => {
+      if (!installTutorTab()) return false;
+      ensureTutorSection();
+      if (location.hash === "#chat") openTutor();
+      return true;
+    };
+
+    if (!install()) {
+      const observer = new MutationObserver(() => {
+        if (install()) observer.disconnect();
+      });
+      observer.observe(document.documentElement, {childList:true, subtree:true});
+      setTimeout(() => observer.disconnect(), 15000);
+    }
+
+    sectionObserver = new MutationObserver(() => hideRegularSections());
+    sectionObserver.observe(document.documentElement, {childList:true, subtree:true});
+
+    window.addEventListener("popstate", () => {
+      if (location.hash === "#chat") openTutor();
+      else closeTutor();
     });
-    observer.observe(document.documentElement, {childList:true, subtree:true});
-    setTimeout(() => observer.disconnect(), 15000);
+    window.addEventListener("hashchange", () => {
+      if (location.hash === "#chat") openTutor();
+      else closeTutor();
+    });
   };
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", watchForTutorNav, {once:true});
+    document.addEventListener("DOMContentLoaded", startTutorIntegration, {once:true});
   } else {
-    watchForTutorNav();
+    startTutorIntegration();
   }
 
   document.write(`<script src="${RUNTIME_URL}"><\/script>`);
