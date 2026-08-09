@@ -28,19 +28,16 @@ def main() -> None:
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
 
-    # Copy only the web app payload, not the Android project or repository metadata.
     shutil.copy2(ROOT / "index.html", OUT / "index.html")
     for name in ("data", "assets"):
         src = ROOT / name
         if src.exists():
             shutil.copytree(src, OUT / name)
 
-    # Bundle the exact runtime used by the last known-good web build.
     runtime = subprocess.check_output(
         ["git", "show", f"{RUNTIME_COMMIT}:support.js"], cwd=ROOT, text=True
     )
 
-    # Make React/ReactDOM/Babel local so app startup never waits on a CDN.
     runtime = runtime.replace(
         'var REACT_URL = "https://unpkg.com/react@18.3.1/umd/react.production.min.js";',
         'var REACT_URL = "https://app.local/vendor/react.production.min.js";'
@@ -53,19 +50,15 @@ def main() -> None:
     )
     (OUT / "support.js").write_text(runtime, encoding="utf-8")
 
-    # Patch the Android copy only. The public web page remains unchanged.
     index_path = OUT / "index.html"
     index = index_path.read_text(encoding="utf-8")
 
-    # Eliminate network font requests; Android's system font renders immediately.
     index = re.sub(r'<link rel="preconnect" href="https://fonts\.googleapis\.com">\s*', '', index)
     index = re.sub(r'<link href="https://fonts\.googleapis\.com[^>]+>\s*', '', index)
 
-    # Pin the current stable Gemini models instead of moving aliases.
     index = index.replace("gemini-flash-lite-latest", "gemini-3.5-flash-lite")
     index = index.replace("gemini-flash-latest", "gemini-3.6-flash")
 
-    # Gemini 3.x removed the old sampling knobs and uses thinkingLevel.
     index = index.replace(
         "generationConfig:{maxOutputTokens:maxTokens||1500,temperature:0.2,thinkingConfig:{thinkingBudget:0}}",
         "generationConfig:{maxOutputTokens:maxTokens||1500,thinkingConfig:{thinkingLevel:model==='gemini-3.6-flash'?'medium':'minimal'}}"
@@ -74,6 +67,52 @@ def main() -> None:
         "generationConfig:{temperature:0,thinkingConfig:{thinkingBudget:0}}",
         "generationConfig:{thinkingConfig:{thinkingLevel:model==='gemini-3.6-flash'?'medium':'minimal'}}"
     )
+
+    # Android WebView's browser SpeechRecognition implementation is unreliable.
+    # In the APK, route the fast conversation mode through Android SpeechRecognizer.
+    native_listen = '''  listenSide(side){
+    const C=this.state.conv;
+    if(C.listening){this.stopListening();return}
+    try{if(window.speechSynthesis)window.speechSynthesis.cancel()}catch(e){}
+    const src=side==='A'?C.sideALang:C.sideBLang;
+    const tgt=side==='A'?C.sideBLang:C.sideALang;
+    if(window.AndroidSpeech&&typeof window.AndroidSpeech.start==='function'){
+      window.__nativeSpeechPartial=(text)=>this.setState({conv:Object.assign({},this.state.conv,{interim:text||''})});
+      window.__nativeSpeechResult=(text)=>{
+        this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null,interim:'',error:''})});
+        if(text&&text.trim())this.interpretTurn(side,src,tgt,text.trim());
+      };
+      window.__nativeSpeechError=(code)=>{
+        const denied=code==='permission-denied';
+        this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null,interim:'',error:denied?'Permiso de micrófono denegado. Actívalo en Ajustes de Android.':'No te oí bien, inténtalo otra vez.'})});
+      };
+      try{
+        window.AndroidSpeech.start(src);
+        this.setState({conv:Object.assign({},this.state.conv,{listening:true,activeSide:side,error:'',interim:''})});
+      }catch(e){
+        this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null,error:'No se pudo iniciar el reconocimiento de voz.'})});
+      }
+      return;
+    }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){this.setState({conv:Object.assign({},this.state.conv,{error:'Tu navegador no soporta el micrófono. Usa Chrome o Safari, o escribe abajo.'})});return}
+    const rec=new SR();this._rec=rec;rec.lang=src==='es'?'es-ES':src==='fa'?'fa-IR':'en-US';rec.interimResults=true;rec.continuous=false;
+    rec.onresult=e=>{let fin='',interim='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript;else interim+=r[0].transcript;}if(interim)this.setState({conv:Object.assign({},this.state.conv,{interim})});if(fin){this.setState({conv:Object.assign({},this.state.conv,{interim:''})});this.interpretTurn(side,src,tgt,fin.trim());}};
+    rec.onerror=ev=>{this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null,interim:'',error:ev.error==='not-allowed'?'Permiso de micrófono denegado. Actívalo en el navegador.':'No te oí bien, inténtalo otra vez.'})})};
+    rec.onend=()=>{this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null,interim:''})})};
+    try{rec.start();this.setState({conv:Object.assign({},this.state.conv,{listening:true,activeSide:side,error:'',interim:''})})}catch(e){}
+  }
+  stopListening(){try{if(window.AndroidSpeech&&typeof window.AndroidSpeech.stop==='function')window.AndroidSpeech.stop()}catch(e){}try{this._rec&&this._rec.stop()}catch(e){}this.setState({conv:Object.assign({},this.state.conv,{listening:false,activeSide:null})})}'''
+
+    index, count = re.subn(
+        r'  listenSide\(side\)\{.*?\n  stopListening\(\)\{.*?\n  \}',
+        native_listen,
+        index,
+        count=1,
+        flags=re.S,
+    )
+    if count != 1:
+        raise RuntimeError(f"Could not patch Android speech mode; matches={count}")
 
     index_path.write_text(index, encoding="utf-8")
 
