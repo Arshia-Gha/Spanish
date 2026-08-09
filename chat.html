@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F6">
+<title>Chat · Arshia Español</title>
+<style>
+:root{--bg:#FAF9F6;--ink:#1B1A17;--muted:#8A857B;--line:#E7E3DA;--yellow:#FFD21A;--blue:#2B5FB5;--red:#B54A2B}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,textarea,input{font:inherit}
+button{cursor:pointer}
+header{position:sticky;top:0;z-index:20;background:rgba(250,249,246,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.header-inner{max-width:860px;margin:auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:inherit;min-width:0}.brand img{height:36px;width:auto}.brand-title{font-weight:800;font-size:16px;line-height:1.05}.brand-sub{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:2px}.dot{color:var(--red)}
+.back{margin-left:auto;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:white;color:#5C574D;font-weight:700;text-decoration:none;font-size:13px}
+main{max-width:860px;margin:auto;padding:18px 16px calc(104px + env(safe-area-inset-bottom))}
+.hero{display:flex;align-items:center;gap:13px;margin-bottom:14px}.hero img{height:58px;width:auto}.hero h1{font-size:24px;margin:0;letter-spacing:-.02em}.hero p{margin:3px 0 0;color:var(--muted);font-size:13.5px;line-height:1.35}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.pill{padding:8px 13px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:#5C574D;font-weight:700;font-size:13px}.pill.active{border-color:var(--ink);background:var(--ink);color:#fff}.pill.model.active{color:var(--yellow)}.spacer{flex:1}.danger{color:#9A3D27}
+.quick{display:flex;gap:7px;overflow-x:auto;padding:1px 1px 8px;scrollbar-width:none}.quick::-webkit-scrollbar{display:none}.quick button{white-space:nowrap;padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#5C574D;font-size:12.5px;font-weight:650}
+.notice{display:none;background:#FFF7E0;border:1.5px solid #E4C562;border-radius:12px;padding:11px 13px;margin:2px 0 12px;font-size:13px;color:#5A4810}.notice.show{display:block}.notice button{margin-left:8px;border:0;background:var(--ink);color:white;border-radius:7px;padding:5px 8px;font-size:12px;font-weight:700}
+.messages{min-height:310px;display:flex;flex-direction:column;gap:10px;padding:8px 0 12px}.empty{margin:auto;text-align:center;color:var(--muted);padding:42px 18px}.empty img{height:76px;width:auto;margin-bottom:8px}.empty strong{display:block;color:#5C574D;font-size:16px;margin-bottom:4px}.msg{max-width:88%;border-radius:16px;padding:11px 13px;line-height:1.48;font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}.user{align-self:flex-end;background:var(--yellow);border:1.5px solid var(--ink);border-bottom-right-radius:5px}.ai{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}.who{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--muted);margin-bottom:4px}.user .who{color:#725A00}.pending{color:var(--muted);font-style:italic}.error{background:#FAE8E2;border-color:#E0A28D;color:#8F3A22}
+.composer-wrap{position:fixed;left:0;right:0;bottom:0;z-index:30;background:linear-gradient(transparent,var(--bg) 17%);padding:18px 14px calc(12px + env(safe-area-inset-bottom))}.composer{max-width:828px;margin:auto;background:#fff;border:2px solid var(--ink);border-radius:17px;padding:8px;display:flex;align-items:flex-end;gap:7px;box-shadow:0 4px 0 var(--ink)}textarea{flex:1;resize:none;border:0;outline:0;min-height:44px;max-height:130px;padding:10px 8px;background:transparent;color:var(--ink);line-height:1.35}.icon{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--ink);display:grid;place-items:center;background:white;font-size:19px;flex:0 0 auto}.icon.listening{background:#FAE8E2;color:#A13D26;animation:pulse 1s infinite}.send{background:var(--ink);color:var(--yellow);font-weight:900}@keyframes pulse{50%{transform:scale(.94);opacity:.75}}
+.key-panel{display:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}.key-panel.show{display:block}.key-row{display:flex;gap:7px}.key-row input{min-width:0;flex:1;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;outline-color:var(--blue)}.key-row button{border:0;background:var(--ink);color:#fff;border-radius:9px;padding:9px 12px;font-weight:700}
+@media(max-width:520px){.hero h1{font-size:21px}.msg{max-width:94%}.back{padding:8px 9px}.brand-sub{display:none}.toolbar .spacer{display:none}}
+</style>
+</head>
+<body>
+<header><div class="header-inner">
+  <a class="brand" href="./"><img src="assets/pet/idle.png" alt="Marsupilami"><div><div class="brand-title">Arshia<span class="dot">·</span>Español</div><div class="brand-sub">con Marsupilami · Tutor IA</div></div></a>
+  <a class="back" href="./">← Volver</a>
+</div></header>
+<main>
+  <div class="hero"><img src="assets/pet/laptop.png" alt=""><div><h1>Tutor de español</h1><p>Pregunta cómo decir algo, pide una explicación gramatical, corrige una frase o practica con ejemplos.</p></div></div>
+  <div class="toolbar">
+    <button class="pill model" id="liteBtn">⚡ Flash-Lite</button>
+    <button class="pill model active" id="flashBtn">🎯 Flash</button>
+    <span class="spacer"></span>
+    <button class="pill" id="keyBtn">🔑 Clave</button>
+    <button class="pill danger" id="clearBtn">🗑 Borrar chat</button>
+  </div>
+  <div class="key-panel" id="keyPanel"><div class="key-row"><input id="keyInput" type="password" autocomplete="off" placeholder="Google Gemini API key"><button id="saveKeyBtn">Guardar</button></div></div>
+  <div class="quick">
+    <button data-prompt="How do I say this naturally in Spanish: ">💬 How do I say…?</button>
+    <button data-prompt="Explain this Spanish grammar clearly with examples: ">🧠 Explain grammar</button>
+    <button data-prompt="Correct my Spanish sentence, explain the mistakes, and give me the natural version: ">✍️ Correct my sentence</button>
+    <button data-prompt="Explain this Spanish word: meaning, grammar, usage, and examples: ">📖 Explain a word</button>
+    <button data-prompt="Give me 6 useful Spanish examples using: ">🧩 Give examples</button>
+  </div>
+  <div class="notice" id="notice">Add your Gemini API key to use the tutor.<button id="noticeKey">Configure</button></div>
+  <div class="messages" id="messages"></div>
+</main>
+<div class="composer-wrap"><div class="composer">
+  <button class="icon" id="micBtn" title="Speak">🎤</button>
+  <textarea id="input" rows="1" placeholder="Ask your Spanish tutor…"></textarea>
+  <button class="icon send" id="sendBtn" title="Send">➤</button>
+</div></div>
+<script>
+"use strict";
+(() => {
+  const $ = id => document.getElementById(id);
+  const KEY_NAME = 'svt_gemini_key';
+  const CHAT_NAME = 'svt_tutor_chat_v1';
+  const MODEL_NAME = 'svt_tutor_model';
+  const MAX_SAVED = 30;
+  const state = {messages:[], model:'gemini-3.6-flash', busy:false, recognition:null};
+
+  const SYSTEM = `You are a practical Spanish tutor for a learner around A1-A2, but you may explain higher-level grammar when asked.
+The user may write in English, Spanish, or Persian/Farsi. Explain in the same language the user uses unless they ask for another language. Spanish examples must always remain in Spanish.
+Priorities:
+- For “how do I say...?”, give the most natural Spanish first, then 1-2 useful alternatives only when they add value. Mention formal/informal or regional differences when relevant.
+- For grammar questions, explain the rule simply, show the structure, give several natural examples, and point out common mistakes.
+- For vocabulary questions, include article/gender for nouns, part of speech, common meanings, usage notes, and examples.
+- For sentence correction, show the corrected Spanish and briefly explain each important correction.
+- If a Spanish form is uncommon or context-dependent, say so rather than inventing certainty.
+- Keep answers focused and useful for learning. Do not drown a simple question in a textbook chapter.
+Use plain text with short headings or bullets when helpful. Do not use markdown tables.`;
+
+  function load(){
+    try{const m=JSON.parse(localStorage.getItem(CHAT_NAME)||'[]');if(Array.isArray(m))state.messages=m.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.text==='string').slice(-MAX_SAVED)}catch(e){}
+    try{const m=localStorage.getItem(MODEL_NAME);if(m==='gemini-3.5-flash-lite'||m==='gemini-3.6-flash')state.model=m}catch(e){}
+    updateModelUI(); render(); updateKeyUI();
+  }
+  function save(){try{localStorage.setItem(CHAT_NAME,JSON.stringify(state.messages.slice(-MAX_SAVED)))}catch(e){}}
+  function key(){try{return (localStorage.getItem(KEY_NAME)||'').trim()}catch(e){return ''}}
+  function updateKeyUI(){const has=!!key();$('notice').classList.toggle('show',!has);$('keyInput').value=has?key():''}
+  function setModel(model){state.model=model;try{localStorage.setItem(MODEL_NAME,model)}catch(e){}updateModelUI()}
+  function updateModelUI(){$('liteBtn').classList.toggle('active',state.model==='gemini-3.5-flash-lite');$('flashBtn').classList.toggle('active',state.model==='gemini-3.6-flash')}
+  function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function render(){
+    const box=$('messages');
+    if(!state.messages.length&&!state.busy){box.innerHTML='<div class="empty"><img src="assets/pet/wave.png" alt=""><strong>Ask me anything about Spanish</strong><div>Try “How do I say I’m running late?” or “Explain por vs para.”</div></div>';return}
+    box.innerHTML=state.messages.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}"><div class="who">${m.role==='user'?'You':'Tutor'}</div>${escapeHtml(m.text)}</div>`).join('')+(state.busy?'<div class="msg ai pending"><div class="who">Tutor</div>Thinking…</div>':'');
+    requestAnimationFrame(()=>{box.lastElementChild&&box.lastElementChild.scrollIntoView({behavior:'smooth',block:'end'})});
+  }
+  function historyForPrompt(){return state.messages.slice(-12).map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.text}]}))}
+  async function askGemini(){
+    if(state.busy)return;
+    const text=$('input').value.trim(); if(!text)return;
+    if(!key()){updateKeyUI();$('keyPanel').classList.add('show');$('keyInput').focus();return}
+    state.messages.push({role:'user',text});$('input').value='';autoSize();state.busy=true;render();save();
+    const model=state.model;
+    const body={systemInstruction:{parts:[{text:SYSTEM}]},contents:historyForPrompt(),generationConfig:{maxOutputTokens:1800,thinkingConfig:{thinkingLevel:model==='gemini-3.6-flash'?'low':'minimal'}}};
+    try{
+      const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key()},body:JSON.stringify(body)});
+      const data=await res.json().catch(()=>null);
+      if(!res.ok){const msg=data&&data.error&&data.error.message?data.error.message:'Gemini HTTP '+res.status;throw new Error(msg)}
+      const c=data&&data.candidates&&data.candidates[0];
+      const out=c&&c.content&&c.content.parts?c.content.parts.map(p=>p.text||'').join('').trim():'';
+      if(!out)throw new Error('Gemini returned an empty response.');
+      state.messages.push({role:'assistant',text:out});
+    }catch(e){state.messages.push({role:'assistant',text:'Error: '+(e&&e.message?e.message:'Could not reach Gemini.'),error:true})}
+    state.busy=false;save();render();$('input').focus();
+  }
+  function autoSize(){const el=$('input');el.style.height='auto';el.style.height=Math.min(el.scrollHeight,130)+'px'}
+  function startVoice(){
+    if(state.recognition){try{state.recognition.stop()}catch(e){}return}
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){state.messages.push({role:'assistant',text:'Voice recognition is not available in this browser. You can still type your question.'});save();render();return}
+    const r=new SR();state.recognition=r;r.lang='en-US';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
+    let finalText='';
+    r.onstart=()=>$('micBtn').classList.add('listening');
+    r.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)finalText+=x[0].transcript;else interim+=x[0].transcript}$('input').value=(finalText||interim).trim();autoSize()};
+    r.onerror=e=>{if(e.error!=='no-speech'){state.messages.push({role:'assistant',text:e.error==='not-allowed'?'Microphone permission was denied. Allow microphone access in your browser settings.':'Voice recognition error: '+e.error});save();render()}};
+    r.onend=()=>{state.recognition=null;$('micBtn').classList.remove('listening');if(finalText.trim()){$('input').value=finalText.trim();autoSize();askGemini()}};
+    try{r.start()}catch(e){state.recognition=null;$('micBtn').classList.remove('listening')}
+  }
+
+  $('sendBtn').onclick=askGemini;
+  $('input').addEventListener('input',autoSize);
+  $('input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askGemini()}});
+  $('micBtn').onclick=startVoice;
+  $('liteBtn').onclick=()=>setModel('gemini-3.5-flash-lite');
+  $('flashBtn').onclick=()=>setModel('gemini-3.6-flash');
+  $('keyBtn').onclick=()=>{$('keyPanel').classList.toggle('show');if($('keyPanel').classList.contains('show'))$('keyInput').focus()};
+  $('noticeKey').onclick=()=>{$('keyPanel').classList.add('show');$('keyInput').focus()};
+  $('saveKeyBtn').onclick=()=>{const v=$('keyInput').value.trim();try{if(v)localStorage.setItem(KEY_NAME,v);else localStorage.removeItem(KEY_NAME)}catch(e){}$('keyPanel').classList.remove('show');updateKeyUI();$('input').focus()};
+  $('clearBtn').onclick=()=>{if(confirm('Delete this tutor chat history?')){state.messages=[];save();render()}};
+  document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{$('input').value=b.dataset.prompt;autoSize();$('input').focus()});
+  load();
+})();
+</script>
+</body>
+</html>
